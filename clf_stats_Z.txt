@@ -1,0 +1,13 @@
+{'n_clusters': 2, 'cluster_tweets_num': 8531466, 'mnb_acc%': 62.90467836714281, 'svm_acc': 63.06664739161691}
+{'n_clusters': 3, 'cluster_tweets_num': 2827023, 'mnb_acc%': 52.680066705419634, 'svm_acc': 53.427495980263494}
+{'n_clusters': 4, 'cluster_tweets_num': 2753301, 'mnb_acc%': 44.787651916093466, 'svm_acc': 45.65836410951458}
+{'n_clusters': 5, 'cluster_tweets_num': 1366702, 'mnb_acc%': 41.02113457554512, 'svm_acc': 42.366514426700185}
+{'n_clusters': 6, 'cluster_tweets_num': 847208, 'mnb_acc%': 37.3433007098477, 'svm_acc': 38.85303037754717}
+{'n_clusters': 7, 'cluster_tweets_num': 847208, 'mnb_acc%': 34.74780188372228, 'svm_acc': 36.32131758262573}
+{'n_clusters': 8, 'cluster_tweets_num': 847208, 'mnb_acc%': 32.929179166871585, 'svm_acc': 34.542418728175875}
+{'n_clusters': 9, 'cluster_tweets_num': 87620, 'mnb_acc%': 31.983227235452755, 'svm_acc': 34.558742718980106}
+{'n_clusters': 10, 'cluster_tweets_num': 87620, 'mnb_acc%': 30.213802023891045, 'svm_acc': 32.89431636612645}
+{'n_clusters': 11, 'cluster_tweets_num': 87620, 'mnb_acc%': 29.388267518831316, 'svm_acc': 32.295103511720725}
+{'n_clusters': 12, 'cluster_tweets_num': 87620, 'mnb_acc%': 28.2558522914606, 'svm_acc': 31.205140886149792}
+{'n_clusters': 13, 'cluster_tweets_num': 66879, 'mnb_acc%': 27.525696912536567, 'svm_acc': 30.768817884514377}
+{'n_clusters': 14, 'cluster_tweets_num': 66879, 'mnb_acc%': 26.431155034675246, 'svm_acc': 29.749868276775416}

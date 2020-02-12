@@ -1,0 +1,141 @@
+import pandas as pd
+import numpy as np
+from nltk.tokenize import word_tokenize
+from nltk import pos_tag
+from nltk.corpus import stopwords
+from nltk.stem import WordNetLemmatizer
+from sklearn.preprocessing import LabelEncoder
+from collections import defaultdict
+from nltk.corpus import wordnet as wn
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn import model_selection, naive_bayes, svm
+from sklearn.metrics import accuracy_score
+import pickle
+from sklearn_extra.cluster import KMedoids
+from operator import itemgetter
+from collections import OrderedDict
+import string
+from nltk.stem import PorterStemmer
+import re
+import json
+import time
+ps = PorterStemmer()
+punc = set(string.punctuation)
+
+
+result_mat_file = open(
+    "iter_results_merged_new.pickle", "rb")
+dist_mat = pickle.load(result_mat_file)
+result_mat_file.close()
+
+average_mat = sum(dist_mat) / len(dist_mat)
+
+
+tweets_dict_file = open("normed_tweets.pickle", "rb")
+tweets_dict = pickle.load(tweets_dict_file)
+tweets_dict_file.close()
+
+names = [state for state in tweets_dict]
+
+# normed_tweets = {}
+# for state in tweets_dict:
+#     print(state)
+#     normed_tweets[state] = []
+#     for tweet in tweets_dict[state]:
+#         tokens = tweet.split()
+#         normed = []
+#         for t in tokens:
+#             normed.append(norm(t))
+#         normed_text = " ".join(normed)
+#         normed_tweets[state].append(normed_text)
+
+
+def clusters_tweets(tweets_dict, dist_mat, n):
+    cluster_labels = []
+    tweets = []
+
+    clustering = KMedoids(
+        n_clusters=n, metric='precomputed').fit_predict(dist_mat)
+
+    clusters_names = {}
+    for index, state in enumerate(names):
+        clusters_names[state] = clustering[index]
+
+    for state in tweets_dict:
+        for tweet in tweets_dict[state]:
+            cluster_labels.append(clusters_names[state])
+            tweets.append(tweet)
+
+    cluster_sizes = {}
+    clutser_counts = {}
+    for c in cluster_labels:
+        clutser_counts[c] = 0
+        if c not in cluster_sizes:
+            cluster_sizes[c] = 1
+        else:
+            cluster_sizes[c] += 1
+    min_cluster = min([v for v in cluster_sizes.values()])
+
+    sampled_cluster_labels = []
+    sampled_tweets = []
+
+    for index, c in enumerate(cluster_labels):
+        if clutser_counts[c] < min_cluster:
+            clutser_counts[c] += 1
+            sampled_cluster_labels.append(c)
+            sampled_tweets.append(tweets[index])
+
+    return sampled_cluster_labels, sampled_tweets, min_cluster
+
+
+file = open("clf_stats_Z.json", "a")
+file2 = open("clf_stats_Z.txt", "a")
+for i in range(2, 15):
+    file = open("clf_stats_Z.json", "a")
+    print(i)
+
+    cluster_labels, tweets, min_cluster = clusters_tweets(
+        tweets_dict, average_mat, i)
+    print(min_cluster)
+    print(len(tweets))
+    Train_X, Test_X, Train_Y, Test_Y = model_selection.train_test_split(
+        tweets, cluster_labels, test_size=0.3)
+    Encoder = LabelEncoder()
+    Train_Y = Encoder.fit_transform(Train_Y)
+    Test_Y = Encoder.fit_transform(Test_Y)
+    print(len(Train_X))
+    Tfidf_vect = TfidfVectorizer()
+    Tfidf_vect.fit(tweets)
+    Train_X_Tfidf = Tfidf_vect.transform(Train_X)
+    Test_X_Tfidf = Tfidf_vect.transform(Test_X)
+    print(Train_X_Tfidf.shape)
+    print(Test_X_Tfidf.shape)
+
+    Naive = naive_bayes.MultinomialNB()
+    Naive.fit(Train_X_Tfidf, Train_Y)
+
+    predictions_NB = Naive.predict(Test_X_Tfidf)
+
+    mnb_acc = accuracy_score(predictions_NB, Test_Y) * 100
+    print("Naive Bayes Accuracy Score -> ",
+          mnb_acc)
+
+    SVM = svm.LinearSVC()
+    SVM.fit(Train_X_Tfidf, Train_Y)
+    # predict the labels on validation dataset
+    predictions_SVM = SVM.predict(Test_X_Tfidf)
+    # Use accuracy_score function to get the accuracy
+
+    svm_acc = accuracy_score(predictions_SVM, Test_Y) * 100
+    print("LinearSVC Accuracy Score -> ",
+          svm_acc)
+
+    record = {"n_clusters": i, "cluster_tweets_num": min_cluster,
+              "mnb_acc%": mnb_acc, "svm_acc": svm_acc}
+    json.dump(record, file)
+
+    file.write("\n")
+    file.close()
+
+    file2.write(str(record))
+    file2.write("\n")
