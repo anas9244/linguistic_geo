@@ -9,16 +9,27 @@ from collections import defaultdict
 from nltk.corpus import wordnet as wn
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn import model_selection, naive_bayes, svm
+from sklearn.model_selection import cross_val_score
 from sklearn.metrics import accuracy_score
 import pickle
 from sklearn_extra.cluster import KMedoids
 from operator import itemgetter
 from collections import OrderedDict
+#!/usr/bin/python3
+from pathlib import Path
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.linear_model import RidgeClassifier
+from sklearn.svm import SVC
+
+from sklearn.ensemble import RandomForestClassifier
+from statistics import mean
+
 import string
 from nltk.stem import PorterStemmer
 import re
 import json
-import time
+from time import time
 ps = PorterStemmer()
 punc = set(string.punctuation)
 
@@ -37,18 +48,27 @@ tweets_dict_file.close()
 
 names = [state for state in tweets_dict]
 
+
 # normed_tweets = {}
 # for state in tweets_dict:
 #     print(state)
 #     normed_tweets[state] = []
 #     for tweet in tweets_dict[state]:
-#         tokens = tweet.split()
-#         normed = []
-#         for t in tokens:
-#             normed.append(norm(t))
-#         normed_text = " ".join(normed)
-#         normed_tweets[state].append(normed_text)
+#         tweet_json = json.loads(tweet)
+#         if type(tweet_json) is not dict:
 
+#             tokens = tweet_json.split()
+#             normed = []
+#             for t in tokens:
+#                 normed.append(norm(t))
+#             normed_text = " ".join(normed)
+#             normed_tweets[state].append(normed_text)
+
+
+# save_normed_tweets = open(
+#     "normed_tweets.pickle", "wb")
+# pickle.dump(normed_tweets, save_normed_tweets, -1)
+# save_normed_tweets.close()
 
 def clusters_tweets(tweets_dict, dist_mat, n):
     cluster_labels = []
@@ -63,6 +83,8 @@ def clusters_tweets(tweets_dict, dist_mat, n):
 
     for state in tweets_dict:
         for tweet in tweets_dict[state]:
+            # if not tweet.startswith("[mention]"):
+
             cluster_labels.append(clusters_names[state])
             tweets.append(tweet)
 
@@ -85,57 +107,49 @@ def clusters_tweets(tweets_dict, dist_mat, n):
             sampled_cluster_labels.append(c)
             sampled_tweets.append(tweets[index])
 
-    return sampled_cluster_labels, sampled_tweets, min_cluster
+    return cluster_labels, tweets, min_cluster
 
 
-file = open("clf_stats_Z.json", "a")
-file2 = open("clf_stats_Z.txt", "a")
+file = open("clf_stats_Z_KMedoids.json", "a")
+
 for i in range(2, 15):
-    file = open("clf_stats_Z.json", "a")
+    file = open("clf_stats_Z_KMedoids.json", "a")
+    start = time()
     print(i)
 
     cluster_labels, tweets, min_cluster = clusters_tweets(
         tweets_dict, average_mat, i)
     print(min_cluster)
     print(len(tweets))
-    Train_X, Test_X, Train_Y, Test_Y = model_selection.train_test_split(
-        tweets, cluster_labels, test_size=0.3)
-    Encoder = LabelEncoder()
-    Train_Y = Encoder.fit_transform(Train_Y)
-    Test_Y = Encoder.fit_transform(Test_Y)
-    print(len(Train_X))
+
     Tfidf_vect = TfidfVectorizer()
-    Tfidf_vect.fit(tweets)
-    Train_X_Tfidf = Tfidf_vect.transform(Train_X)
-    Test_X_Tfidf = Tfidf_vect.transform(Test_X)
-    print(Train_X_Tfidf.shape)
-    print(Test_X_Tfidf.shape)
+    Train_X_Tfidf = Tfidf_vect.fit_transform(tweets)
 
-    Naive = naive_bayes.MultinomialNB()
-    Naive.fit(Train_X_Tfidf, Train_Y)
-
-    predictions_NB = Naive.predict(Test_X_Tfidf)
-
-    mnb_acc = accuracy_score(predictions_NB, Test_Y) * 100
-    print("Naive Bayes Accuracy Score -> ",
-          mnb_acc)
+    MNB = naive_bayes.MultinomialNB()
+    acc_NB = mean(cross_val_score(MNB, Train_X_Tfidf, cluster_labels, cv=5))
+    print(time() - start, "Naive Bayes Accuracy Score -> ",
+          acc_NB)
 
     SVM = svm.LinearSVC()
-    SVM.fit(Train_X_Tfidf, Train_Y)
-    # predict the labels on validation dataset
-    predictions_SVM = SVM.predict(Test_X_Tfidf)
-    # Use accuracy_score function to get the accuracy
-
-    svm_acc = accuracy_score(predictions_SVM, Test_Y) * 100
+    acc_SVM = mean(cross_val_score(SVM, Train_X_Tfidf, cluster_labels, cv=5))
     print("LinearSVC Accuracy Score -> ",
-          svm_acc)
+          acc_SVM)
+
+    ridge_model = RidgeClassifier()
+    acc_ridge = mean(cross_val_score(
+        ridge_model, Train_X_Tfidf, cluster_labels, cv=5))
+    print("RidgeClassifier Accuracy Score -> ",
+          acc_ridge)
+
+    rfc_model = RandomForestClassifier()
+    acc_rfc = mean(cross_val_score(
+        rfc_model, Train_X_Tfidf, cluster_labels, cv=5))
+    print("RandomForestClassifier Accuracy Score -> ",
+          acc_rfc)
 
     record = {"n_clusters": i, "cluster_tweets_num": min_cluster,
-              "mnb_acc%": mnb_acc, "svm_acc": svm_acc}
+              "mnb_acc%": mnb_acc, "svm_acc": acc_SVM, 'acc_ridge': acc_ridge, 'acc_rfc': acc_rfc}
     json.dump(record, file)
 
     file.write("\n")
     file.close()
-
-    file2.write(str(record))
-    file2.write("\n")
