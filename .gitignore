@@ -1,0 +1,10 @@
+*.json
+*.jsonl
+contries/
+*.pickle
+*.csv
+allCountries.txt
+US.txt
+*.ndjson
+*.zip
+tf_idf_test/
