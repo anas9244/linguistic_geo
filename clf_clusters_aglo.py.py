@@ -10,6 +10,7 @@ from nltk.corpus import wordnet as wn
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn import model_selection, naive_bayes, svm
 from sklearn.linear_model import RidgeClassifier
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import cross_val_score
 from sklearn.metrics import accuracy_score
 import pickle
@@ -22,6 +23,7 @@ from nltk.stem import PorterStemmer
 import re
 import json
 from time import time
+from statistics import mean
 
 ps = PorterStemmer()
 punc = set(string.punctuation)
@@ -88,6 +90,7 @@ def clusters_tweets(tweets_dict, dist_mat, n):
         else:
             cluster_sizes[c] += 1
     min_cluster = min([v for v in cluster_sizes.values()])
+    max_cluster = min([v for v in cluster_sizes.values()])
 
     sampled_cluster_labels = []
     sampled_tweets = []
@@ -98,22 +101,24 @@ def clusters_tweets(tweets_dict, dist_mat, n):
             sampled_cluster_labels.append(c)
             sampled_tweets.append(tweets[index])
 
-    return cluster_labels, tweets, min_cluster
+    return sampled_cluster_labels, sampled_tweets, min_cluster, max_cluster
 
 
 file = open("clf_stats_Z_aglo_average.json", "a")
 
-for i in range(2, 15):
+for i in range(3, 15):
     file = open("clf_stats_Z_aglo_average.json", "a")
+    start = time()
     print(i)
 
-    cluster_labels, tweets, min_cluster = clusters_tweets(
+    cluster_labels, tweets, min_cluster, max_cluster = clusters_tweets(
         tweets_dict, average_mat, i)
     print(min_cluster)
     print(len(tweets))
 
     Tfidf_vect = TfidfVectorizer()
     Train_X_Tfidf = Tfidf_vect.fit_transform(tweets)
+    print(time() - start, "finished tfidf transform")
 
     MNB = naive_bayes.MultinomialNB()
     acc_NB = mean(cross_val_score(MNB, Train_X_Tfidf, cluster_labels, cv=5))
@@ -122,23 +127,23 @@ for i in range(2, 15):
 
     SVM = svm.LinearSVC()
     acc_SVM = mean(cross_val_score(SVM, Train_X_Tfidf, cluster_labels, cv=5))
-    print("LinearSVC Accuracy Score -> ",
+    print(time() - start, "LinearSVC Accuracy Score -> ",
           acc_SVM)
 
     ridge_model = RidgeClassifier()
     acc_ridge = mean(cross_val_score(
         ridge_model, Train_X_Tfidf, cluster_labels, cv=5))
-    print("RidgeClassifier Accuracy Score -> ",
+    print(time() - start, "RidgeClassifier Accuracy Score -> ",
           acc_ridge)
 
     rfc_model = RandomForestClassifier()
     acc_rfc = mean(cross_val_score(
         rfc_model, Train_X_Tfidf, cluster_labels, cv=5))
-    print("RandomForestClassifier Accuracy Score -> ",
+    print(time() - start, "RandomForestClassifier Accuracy Score -> ",
           acc_rfc)
 
-    record = {"n_clusters": i, "cluster_tweets_num": min_cluster,
-              "mnb_acc%": mnb_acc, "svm_acc": acc_SVM, 'acc_ridge': acc_ridge, 'acc_rfc': acc_rfc}
+    record = {"n_clusters": i, "min_cluster": min_cluster, 'max_cluster': max_cluster,
+              "acc_NB": acc_NB, 'acc_SVM': acc_SVM, 'acc_ridge': acc_ridge, 'acc_rfc': acc_rfc}
     json.dump(record, file)
 
     file.write("\n")
