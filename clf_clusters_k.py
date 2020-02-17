@@ -127,50 +127,50 @@ def clusters_tweets(n):
     return cluster_labels, min_cluster, max_cluster
 
 
+#file = open("clf_stats_Z_KMedoids.json", "a")
+
+
+#for i in range(7, 8):
 file = open("clf_stats_Z_KMedoids.json", "a")
+start = time()
 
+cc = RandomOverSampler()
+cluster_labels, min_cluster, max_cluster = clusters_tweets(7)
+#Train_X, Test_X, Train_Y, Test_Y = model_selection.train_test_split(tweets,Corpus['label'],test_size=0.3)
 
-for i in range(3, 15):
-    file = open("clf_stats_Z_KMedoids.json", "a")
-    start = time()
+print(min_cluster)
+print(Counter(cluster_labels))
 
-    # cc = SMOTEENN()
-    cluster_labels, min_cluster, max_cluster = clusters_tweets(i)
-    #Train_X, Test_X, Train_Y, Test_Y = model_selection.train_test_split(tweets,Corpus['label'],test_size=0.3)
+X_res, y_res = cc.fit_resample(Train_X_Tfidf, cluster_labels)
 
-    print(min_cluster)
-    print(Counter(cluster_labels))
+print(Counter(y_res))
+print(time() - start, "finished resampling")
 
-    # X_res, y_res = cc.fit_resample(Train_X_Tfidf, cluster_labels)
+MNB = naive_bayes.MultinomialNB()
+acc_NB = mean(cross_val_score(MNB, X_res, y_res, cv=5))
+print(time() - start, "Naive Bayes Accuracy Score -> ",
+      acc_NB)
 
-    # print(Counter(y_res))
-    #print(time() - start, "finished resampling")
+# SVM = svm.LinearSVC()
+# acc_SVM = mean(cross_val_score(SVM, X_res, y_res, cv=5))
+# print(time() - start, "LinearSVC Accuracy Score -> ",
+#       acc_SVM)
 
-    MNB = naive_bayes.MultinomialNB()
-    acc_NB = mean(cross_val_score(MNB, Train_X_Tfidf, cluster_labels, cv=5))
-    print(time() - start, "Naive Bayes Accuracy Score -> ",
-          acc_NB)
+# ridge_model = RidgeClassifier()
+# acc_ridge = mean(cross_val_score(
+#     ridge_model, X_res, y_res, cv=5))
+# print(time() - start, "RidgeClassifier Accuracy Score -> ",
+#       acc_ridge)
 
-    SVM = svm.LinearSVC()
-    acc_SVM = mean(cross_val_score(SVM, Train_X_Tfidf, cluster_labels, cv=5))
-    print(time() - start, "LinearSVC Accuracy Score -> ",
-          acc_SVM)
+# rfc_model = RandomForestClassifier()
+# acc_rfc = mean(cross_val_score(
+#     rfc_model, X_res, y_res, cv=5))
+# print(time() - start, "RandomForestClassifier Accuracy Score -> ",
+#       acc_rfc)
 
-    ridge_model = RidgeClassifier()
-    acc_ridge = mean(cross_val_score(
-        ridge_model, Train_X_Tfidf, cluster_labels, cv=5))
-    print(time() - start, "RidgeClassifier Accuracy Score -> ",
-          acc_ridge)
+record = {"Random_oversampling_n_clusters": 7, "cluster_tweets_num": min_cluster, 'max_cluster': max_cluster,
+          "acc_NB": acc_NB}  # , 'acc_SVM': acc_SVM, 'acc_ridge': acc_ridge, 'acc_rfc': acc_rfc}
+json.dump(record, file)
 
-    rfc_model = RandomForestClassifier()
-    acc_rfc = mean(cross_val_score(
-        rfc_model, Train_X_Tfidf, cluster_labels, cv=5))
-    print(time() - start, "RandomForestClassifier Accuracy Score -> ",
-          acc_rfc)
-
-    record = {"n_clusters": 7, "cluster_tweets_num": min_cluster, 'max_cluster': max_cluster,
-              "acc_NB": acc_NB, 'acc_SVM': acc_SVM, 'acc_ridge': acc_ridge, 'acc_rfc': acc_rfc}
-    json.dump(record, file)
-
-    file.write("\n")
-    file.close()
+file.write("\n")
+file.close()
