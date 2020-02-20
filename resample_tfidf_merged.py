@@ -25,7 +25,7 @@ tweets_dict_file.close()
 tweets_dict_top = {}
 
 for city in tweets_dict:
-    if len(tweets_dict[city]) > 5000:
+    if len(tweets_dict[city]) > 2000:
         tweets_dict_top[city] = tweets_dict[city]
 
 
@@ -73,7 +73,7 @@ for i in range(iters):
     print("--- %s seconds ---" % (time.time() - start_time))
 
 
-save_iter_results = open("iter_results_tfidf_cities.pickle", "wb")
+save_iter_results = open("iter_results_tfidf_cities_2000t.pickle", "wb")
 pickle.dump(iter_results, save_iter_results, -1)
 save_iter_results.close()
 
