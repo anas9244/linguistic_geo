@@ -103,7 +103,7 @@ def get_dendo(measure, method):
     #keys = list(states_zscores.keys())
 
     dendrogram(sch.linkage(
-        average_mat, method=method), labels=names, leaf_font_size=10)
+        average_mat, method=method), labels=names, leaf_font_size=10, orientation='left')
 
     plt.xticks(rotation=0)
     plt.title('Hierarchical Clustering Dendrogram based on ' +
@@ -117,7 +117,7 @@ def get_dendo(measure, method):
 # jsd
 cluster(7, 'z')
 
-#get_dendo('z', 'average')
+get_dendo('z', 'average')
 
 
 # dendrogram=sch.dendrogram(sch.linkage(average_mat,method='complete',optimal_ordering=False),labels=keys,leaf_font_size=10)
