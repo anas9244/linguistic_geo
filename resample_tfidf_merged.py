@@ -42,7 +42,7 @@ print(iters)
 
 iter_results = []
 
-for i in range(50):
+for i in range(iters):
     print(i)
     start_time = time.time()
 
@@ -62,7 +62,7 @@ for i in range(50):
             sub_corpus += " " + tweet
         corpus.append(sub_corpus)
 
-    vectorizer = TfidfVectorizer(ngram_range=(1, 3))
+    vectorizer = TfidfVectorizer()
     X = vectorizer.fit_transform(corpus)
 
     tf_idf_dist = manhattan_distances(X)

@@ -86,7 +86,7 @@ def get_delta(target, states_zscores, word_list):
 iter_results = []
 
 
-for i in range(50):
+for i in range(iters):
     print(i)
     start_time = time.time()
 
@@ -175,7 +175,7 @@ def sendemail(from_addr, to_addr_list,
 
 sendemail(from_addr='anasnayef1@gmail.com',
           to_addr_list=['anas.alnayef@uni-weimar.de'],
-          subject='tfidf_dist done',
-          message='tfidf_dist done',
+          subject='jsd_dist done',
+          message='jsd_dist done',
           login='anasnayef1@gmail.com',
           password='Yeje_9244')

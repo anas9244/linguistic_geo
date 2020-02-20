@@ -101,7 +101,7 @@ def get_average(deltas):
 iter_results = []
 
 print("Begin sampling ############################")
-for i in range(50):
+for i in range(iters):
     print(i)
     start_time = time.time()
 
