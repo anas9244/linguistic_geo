@@ -11,6 +11,19 @@ new_tweets_dict = pickle.load(new_tweets_dict_file)
 new_tweets_dict_file.close()
 
 
+def translate(value, leftMin, leftMax):
+    # Figure out how 'wide' each range is
+    leftSpan = leftMax - leftMin
+    rightSpan = 1 - 0
+
+    # Convert the left range into a 0-1 range (float)
+    valueScaled = float(value - leftMin) / float(leftSpan)
+
+    # Convert the 0-1 range into a value in the right range.
+    return 0 + (valueScaled * rightSpan)
+
+
+
 iter_results_file = open("iter_results_merged_new.pickle", "rb")
 iter_results_Z = pickle.load(iter_results_file)
 iter_results_file.close()
@@ -33,8 +46,23 @@ noremd_mat = np.zeros((len(D_jsd), len(D_jsd)))
 
 for i in range(len(D_jsd)):
     for j in range(len(D_jsd)):
+        D_jsd_max=D_jsd.max()
+        D_Z_max=D_Z.max()
+        D_tfidf_max=D_tfidf.max()
 
-        x = np.array([D_Z[i, j], D_tfidf[i, j], D_jsd[i, j]])
+        D_jsd_min=D_jsd.min()
+        D_Z_min=D_Z.min()
+        D_tfidf_min=D_tfidf.min()
+
+        D_Z_norm=translate(D_Z[i, j],D_Z_min,D_Z_max)
+        D_tfidf_norm=translate(D_tfidf[i, j],D_tfidf_min,D_tfidf_max)
+        D_jsd_norm=translate(D_jsd[i, j],D_jsd_min,D_jsd_max)
+
+        print (D_Z_norm,D_tfidf_norm,D_jsd_norm)
+
+
+        x = np.array([D_Z_norm, D_tfidf_norm, D_jsd_norm])
+        print(np.linalg.norm(x))
         noremd_mat[i, j] = np.linalg.norm(x)
 
 
@@ -45,7 +73,7 @@ print(len(noremd_mat))
 
 fig = plt.figure()
 ax = fig.add_subplot()
-cax = ax.matshow(D_tfidf, cmap='jet')
+cax = ax.matshow(noremd_mat, cmap='jet')
 fig.colorbar(cax)
 ticks = np.arange(0, len(new_tweets_dict), 1)
 plt.title("tfidf dist_map, num of cities > 5000 tweets : " +
@@ -58,9 +86,9 @@ plt.axis('off')
 
 plt.show()
 
-# import numpy as np
-# x = np.array([0, 4, -1])
-# print(np.linalg.norm(x))
+import numpy as np
+x = np.array([0, 4, -1])
+print(np.linalg.norm(x))
 
 
 #>5000 : wordset 717, 63 iters, max: 317697
