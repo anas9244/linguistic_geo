@@ -6,9 +6,9 @@ import math
 
 import numpy as np
 
-new_tweets_dict_file = open("normed_tweets.pickle", "rb")
-new_tweets_dict = pickle.load(new_tweets_dict_file)
-new_tweets_dict_file.close()
+# new_tweets_dict_file = open("normed_tweets.pickle", "rb")
+# new_tweets_dict = pickle.load(new_tweets_dict_file)
+# new_tweets_dict_file.close()
 
 
 def translate(value, leftMin, leftMax):
@@ -24,60 +24,67 @@ def translate(value, leftMin, leftMax):
 
 
 
-iter_results_file = open("iter_results_merged_new.pickle", "rb")
-iter_results_Z = pickle.load(iter_results_file)
-iter_results_file.close()
-D_Z = sum(iter_results_Z) / len(iter_results_Z)
-print(len(iter_results_Z))
-iter_results_file = open("iter_results_tfidf_new.pickle", "rb")
-iter_results_tfidf = pickle.load(iter_results_file)
-iter_results_file.close()
-D_tfidf = sum(iter_results_tfidf) / len(iter_results_tfidf)
-print(len(iter_results_tfidf))
+# iter_results_file = open("iter_results_merged_new.pickle", "rb")
+# iter_results_Z = pickle.load(iter_results_file)
+# iter_results_file.close()
+# D_Z = sum(iter_results_Z) / len(iter_results_Z)
+# print(len(iter_results_Z))
+# iter_results_file = open("iter_results_tfidf_new.pickle", "rb")
+# iter_results_tfidf = pickle.load(iter_results_file)
+# iter_results_file.close()
+# D_tfidf = sum(iter_results_tfidf) / len(iter_results_tfidf)
+# print(len(iter_results_tfidf))
 
-iter_results_file = open("iter_results_jsd_merged_new.pickle", "rb")
-iter_results_jsd = pickle.load(iter_results_file)
-iter_results_file.close()
-D_jsd = sum(iter_results_jsd) / len(iter_results_jsd)
-print(len(iter_results_jsd))
-
-noremd_mat = np.zeros((len(D_jsd), len(D_jsd)))
+# iter_results_file = open("iter_results_jsd_merged_new.pickle", "rb")
+# iter_results_jsd = pickle.load(iter_results_file)
+# iter_results_file.close()
+# D_jsd = sum(iter_results_jsd) / len(iter_results_jsd)
+# print(len(iter_results_jsd))
 
 
-for i in range(len(D_jsd)):
-    for j in range(len(D_jsd)):
-        D_jsd_max=D_jsd.max()
-        D_Z_max=D_Z.max()
-        D_tfidf_max=D_tfidf.max()
-
-        D_jsd_min=D_jsd.min()
-        D_Z_min=D_Z.min()
-        D_tfidf_min=D_tfidf.min()
-
-        D_Z_norm=translate(D_Z[i, j],D_Z_min,D_Z_max)
-        D_tfidf_norm=translate(D_tfidf[i, j],D_tfidf_min,D_tfidf_max)
-        D_jsd_norm=translate(D_jsd[i, j],D_jsd_min,D_jsd_max)
-
-        print (D_Z_norm,D_tfidf_norm,D_jsd_norm)
 
 
-        x = np.array([D_Z_norm, D_tfidf_norm, D_jsd_norm])
-        print(np.linalg.norm(x))
-        noremd_mat[i, j] = np.linalg.norm(x)
+geo_mat_file = open("geo_mat.pickle", "rb")
+geo_mat = pickle.load(geo_mat_file)
+geo_mat_file.close()
+
+#noremd_mat = np.zeros((len(D_jsd), len(D_jsd)))
 
 
-names = [state for state in new_tweets_dict]
+# for i in range(len(D_jsd)):
+#     for j in range(len(D_jsd)):
+#         D_jsd_max=D_jsd.max()
+#         D_Z_max=D_Z.max()
+#         D_tfidf_max=D_tfidf.max()
+
+#         D_jsd_min=D_jsd.min()
+#         D_Z_min=D_Z.min()
+#         D_tfidf_min=D_tfidf.min()
+
+#         D_Z_norm=translate(D_Z[i, j],D_Z_min,D_Z_max)
+#         D_tfidf_norm=translate(D_tfidf[i, j],D_tfidf_min,D_tfidf_max)
+#         D_jsd_norm=translate(D_jsd[i, j],D_jsd_min,D_jsd_max)
+
+#         print (D_Z_norm,D_tfidf_norm,D_jsd_norm)
 
 
-print(len(noremd_mat))
+#         x = np.array([D_Z_norm, D_tfidf_norm, D_jsd_norm])
+#         print(np.linalg.norm(x))
+#         noremd_mat[i, j] = np.linalg.norm(x)
+
+
+# names = [state for state in new_tweets_dict]
+
+
+# print(len(noremd_mat))
 
 fig = plt.figure()
 ax = fig.add_subplot()
-cax = ax.matshow(noremd_mat, cmap='jet')
+cax = ax.matshow(geo_mat, cmap='jet')
 fig.colorbar(cax)
-ticks = np.arange(0, len(new_tweets_dict), 1)
+#ticks = np.arange(0, len(new_tweets_dict), 1)
 plt.title("tfidf dist_map, num of cities > 5000 tweets : " +
-          str(len(noremd_mat)))
+          str(len(geo_mat)))
 # ax.set_xticks(ticks,)
 # ax.set_yticks(ticks)
 # ax.set_xticklabels(names, size=7)
