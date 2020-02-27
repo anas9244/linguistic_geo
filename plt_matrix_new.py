@@ -11,26 +11,26 @@ import numpy as np
 # new_tweets_dict_file.close()
 
 
-def translate(value, leftMin, leftMax):
-    # Figure out how 'wide' each range is
-    leftSpan = leftMax - leftMin
-    rightSpan = 1 - 0
+# def translate(value, leftMin, leftMax):
+#     # Figure out how 'wide' each range is
+#     leftSpan = leftMax - leftMin
+#     rightSpan = 1 - 0
 
-    # Convert the left range into a 0-1 range (float)
-    valueScaled = float(value - leftMin) / float(leftSpan)
+#     # Convert the left range into a 0-1 range (float)
+#     valueScaled = float(value - leftMin) / float(leftSpan)
 
-    # Convert the 0-1 range into a value in the right range.
-    return 0 + (valueScaled * rightSpan)
-
-
-names_states_file = open("names_states.pickle", "rb")
-names = pickle.load(names_states_file)
-names_states_file.close()
+#     # Convert the 0-1 range into a value in the right range.
+#     return 0 + (valueScaled * rightSpan)
 
 
-noremd_mat_file = open("noremd_mat_states.pickle", "rb")
-noremd_mat = pickle.load(noremd_mat_file)
-noremd_mat_file.close()
+# names_states_file = open("names_states.pickle", "rb")
+# names = pickle.load(names_states_file)
+# names_states_file.close()
+
+
+# noremd_mat_file = open("noremd_mat_states.pickle", "rb")
+# noremd_mat = pickle.load(noremd_mat_file)
+# noremd_mat_file.close()
 
 
 # iter_results_file = open("iter_results_merged_new.pickle", "rb")
@@ -51,9 +51,9 @@ noremd_mat_file.close()
 # print(len(iter_results_jsd))
 
 
-geo_mat_file = open("geo_mat_states.pickle", "rb")
-geo_mat = pickle.load(geo_mat_file)
-geo_mat_file.close()
+# geo_mat_file = open("geo_mat_states.pickle", "rb")
+# geo_mat = pickle.load(geo_mat_file)
+# geo_mat_file.close()
 
 #noremd_mat = np.zeros((len(D_jsd), len(D_jsd)))
 
@@ -85,26 +85,46 @@ geo_mat_file.close()
 
 # print(len(noremd_mat))
 
-fig = plt.figure()
-ax = fig.add_subplot()
-cax = ax.matshow(noremd_mat, cmap='jet')
-fig.colorbar(cax)
-ticks = np.arange(0, len(names), 1)
-plt.title("tfidf dist_map, num of cities > 5000 tweets : " +
-          str(len(geo_mat)))
-ax.set_xticks(ticks,)
-ax.set_yticks(ticks)
-ax.set_xticklabels(names, size=7)
-ax.set_yticklabels(names, size=7)
-# plt.axis('off')
 
-plt.show()
+def show_mat(gran, geo=False):
 
-import numpy as np
-x = np.array([0, 4, -1])
-print(np.linalg.norm(x))
+    names_file = open("names_" + gran + ".pickle", "rb")
+    names = pickle.load(names_file)
+    names_file.close()
+
+    if geo:
+        noremd_mat_file = open("geo_mat_" + gran + ".pickle", "rb")
+        noremd_mat = pickle.load(noremd_mat_file)
+        noremd_mat_file.close()
+
+    else:
+
+        noremd_mat_file = open("noremd_mat_" + gran + ".pickle", "rb")
+        noremd_mat = pickle.load(noremd_mat_file)
+        noremd_mat_file.close()
+
+    fig = plt.figure()
+    ax = fig.add_subplot()
+    cax = ax.matshow(noremd_mat, cmap='jet')
+    fig.colorbar(cax)
+    ticks = np.arange(0, len(names), 1)
+    if geo:
+        plt.title(gran + ", Geographic distance, " +
+                  "num of " + gran + ": " + str(len(names)))
+    else:
+        plt.title(gran + ", Language distance, " +
+                  "num of " + gran + ": " + str(len(names)))
+
+    ax.set_xticks(ticks,)
+    ax.set_yticks(ticks)
+    ax.set_xticklabels(names, size=7)
+    ax.set_yticklabels(names, size=7)
+    # plt.axis('off')
+
+    plt.show()
 
 
+show_mat('cities', False)
 #>5000 : wordset 717, 63 iters, max: 317697
 
 
