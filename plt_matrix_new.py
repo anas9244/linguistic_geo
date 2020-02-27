@@ -23,6 +23,15 @@ def translate(value, leftMin, leftMax):
     return 0 + (valueScaled * rightSpan)
 
 
+names_states_file = open("names_states.pickle", "rb")
+names = pickle.load(names_states_file)
+names_states_file.close()
+
+
+noremd_mat_file = open("noremd_mat_states.pickle", "rb")
+noremd_mat = pickle.load(noremd_mat_file)
+noremd_mat_file.close()
+
 
 # iter_results_file = open("iter_results_merged_new.pickle", "rb")
 # iter_results_Z = pickle.load(iter_results_file)
@@ -42,9 +51,7 @@ def translate(value, leftMin, leftMax):
 # print(len(iter_results_jsd))
 
 
-
-
-geo_mat_file = open("geo_mat.pickle", "rb")
+geo_mat_file = open("geo_mat_states.pickle", "rb")
 geo_mat = pickle.load(geo_mat_file)
 geo_mat_file.close()
 
@@ -80,16 +87,16 @@ geo_mat_file.close()
 
 fig = plt.figure()
 ax = fig.add_subplot()
-cax = ax.matshow(geo_mat, cmap='jet')
+cax = ax.matshow(noremd_mat, cmap='jet')
 fig.colorbar(cax)
-#ticks = np.arange(0, len(new_tweets_dict), 1)
+ticks = np.arange(0, len(names), 1)
 plt.title("tfidf dist_map, num of cities > 5000 tweets : " +
           str(len(geo_mat)))
-# ax.set_xticks(ticks,)
-# ax.set_yticks(ticks)
-# ax.set_xticklabels(names, size=7)
-# ax.set_yticklabels(names, size=7)
-plt.axis('off')
+ax.set_xticks(ticks,)
+ax.set_yticks(ticks)
+ax.set_xticklabels(names, size=7)
+ax.set_yticklabels(names, size=7)
+# plt.axis('off')
 
 plt.show()
 

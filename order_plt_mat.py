@@ -1,124 +1,147 @@
 
 import matplotlib.pyplot as plt
+
 import pickle
 import seaborn as sns
-sns.set(font="monospace")
+# sns.set(font="monospace")
 import scipy.spatial as sp
 import scipy.cluster.hierarchy as hc
 
 import numpy as np
 
-def translate(value, leftMin, leftMax):
-    # Figure out how 'wide' each range is
-    leftSpan = leftMax - leftMin
-    rightSpan = 1 - 0
 
-    # Convert the left range into a 0-1 range (float)
-    valueScaled = float(value - leftMin) / float(leftSpan)
+# def translate(value, leftMin, leftMax):
+#     # Figure out how 'wide' each range is
+#     leftSpan = leftMax - leftMin
+#     rightSpan = 1 - 0
 
-    # Convert the 0-1 range into a value in the right range.
-    return 0 + (valueScaled * rightSpan)
+#     # Convert the left range into a 0-1 range (float)
+#     valueScaled = float(value - leftMin) / float(leftSpan)
 
-
-
-# new_tweets_dict_file = open("normed_tweets.pickle", "rb")
-# new_tweets_dict = pickle.load(new_tweets_dict_file)
-# new_tweets_dict_file.close()
+#     # Convert the 0-1 range into a value in the right range.
+#     return 0 + (valueScaled * rightSpan)
 
 
+# iter_results_file = open("iter_results_z_states.pickle", "rb")
+# iter_results_Z = pickle.load(iter_results_file)
+# iter_results_file.close()
+# D_Z = sum(iter_results_Z) / len(iter_results_Z)
+# print(len(iter_results_Z))
 
-geo_mat_file = open("geo_mat.pickle", "rb")
-geo_mat = pickle.load(geo_mat_file)
-geo_mat_file.close()
+# iter_results_file = open("iter_results_tfidf_states.pickle", "rb")
+# iter_results_tfidf = pickle.load(iter_results_file)
+# iter_results_file.close()
+# D_tfidf = sum(iter_results_tfidf) / len(iter_results_tfidf)
+# print(len(iter_results_tfidf))
 
-cities_coor_file = open("cities_coor.pickle", "rb")
-cities_coor = pickle.load(cities_coor_file)
-cities_coor_file.close()
-
-
-top_cities_file = open("top_cities.pickle", "rb")
-top_cities = pickle.load(top_cities_file)
-top_cities_file.close()
-names = [cities_coor[i]['name'].split(',')[0] for i in top_cities]
-
-
-
-iter_results_file = open("iter_results_Z_cities.pickle", "rb")
-iter_results_Z = pickle.load(iter_results_file)
-iter_results_file.close()
-D_Z = sum(iter_results_Z) / len(iter_results_Z)
-print(len(iter_results_Z))
-
-iter_results_file = open("iter_results_tfidf_cities.pickle", "rb")
-iter_results_tfidf = pickle.load(iter_results_file)
-iter_results_file.close()
-D_tfidf = sum(iter_results_tfidf) / len(iter_results_tfidf)
-print(len(iter_results_tfidf))
-
-iter_results_file = open("iter_results_jsd_cities.pickle", "rb")
-iter_results_jsd = pickle.load(iter_results_file)
-iter_results_file.close()
-D_jsd = sum(iter_results_jsd) / len(iter_results_jsd)
-print(len(iter_results_jsd))
-
-noremd_mat = np.zeros((len(D_jsd), len(D_jsd)))
+# iter_results_file = open("iter_results_jsd_states.pickle", "rb")
+# iter_results_jsd = pickle.load(iter_results_file)
+# iter_results_file.close()
+# D_jsd = sum(iter_results_jsd) / len(iter_results_jsd)
+# print(len(iter_results_jsd))
 
 
-for i in range(len(D_jsd)):
-    for j in range(len(D_jsd)):
-        # D_jsd_max=D_jsd.max()
-        # D_Z_max=D_Z.max()
-        # D_tfidf_max=D_tfidf.max()
-
-        # D_jsd_min=D_jsd.min()
-        # D_Z_min=D_Z.min()
-        # D_tfidf_min=D_tfidf.min()
-
-        # D_Z_norm=translate(D_Z[i, j],D_Z_min,D_Z_max)
-        # D_tfidf_norm=translate(D_tfidf[i, j],D_tfidf_min,D_tfidf_max)
-        # D_jsd_norm=translate(D_jsd[i, j],D_jsd_min,D_jsd_max)
-
-        x = np.array([D_Z[i, j], D_tfidf[i, j], D_jsd[i, j]])
-        noremd_mat[i, j] = np.linalg.norm(x)
+#noremd_mat = np.zeros((len(D_jsd), len(D_jsd)))
 
 
-print(len(noremd_mat))
+# for i in range(len(D_jsd)):
+#     for j in range(len(D_jsd)):
+#         D_jsd_max = D_jsd.max()
+#         D_Z_max = D_Z.max()
+#         D_tfidf_max = D_tfidf.max()
 
-linkage = hc.linkage(sp.distance.squareform(geo_mat), method='average')
+#         D_jsd_min = D_jsd.min()
+#         D_Z_min = D_Z.min()
+#         D_tfidf_min = D_tfidf.min()
 
-plt.xticks(rotation=0)
+#         D_Z_norm = translate(D_Z[i, j], D_Z_min, D_Z_max)
+#         D_tfidf_norm = translate(D_tfidf[i, j], D_tfidf_min, D_tfidf_max)
+#         D_jsd_norm = translate(D_jsd[i, j], D_jsd_min, D_jsd_max)
 
-dendo = sns.clustermap(noremd_mat, row_linkage=linkage,
-                       col_linkage=linkage, cmap="jet", cbar_pos=(0.09, 0.01, .03, 0.7480577777777779))
-
-leafs = dendo.dendrogram_col.reordered_ind
-cluster_names = []
-for i in leafs:
-    cluster_names.append(names[i])
-
-positions = [i + 0.5 for i in range(len(names))]
-dendo.ax_heatmap.set_xticklabels(cluster_names)
-
-dendo.ax_heatmap.xaxis.set_ticks(positions)
-dendo.ax_heatmap.xaxis.set_ticklabels(cluster_names,rotation=45)
-
-dendo.ax_heatmap.yaxis.set_ticks(positions)
-dendo.ax_heatmap.yaxis.set_ticklabels(cluster_names)
+#         x = np.array([D_Z_norm, D_tfidf_norm, D_jsd_norm])
+#         noremd_mat[i, j] = np.linalg.norm(x)
 
 
-dendo.ax_heatmap.xaxis.set_ticks_position('top')
-dendo.ax_heatmap.yaxis.set_ticks_position('left')
-
-#dendo.ax_heatmap.axis('off')
-
-
-dendo.ax_row_dendrogram.set_visible(False)
-
-ll, bb, ww, hh = dendo.ax_heatmap.get_position().bounds
-
-print(ll, bb, ww, hh)
-dendo.ax_heatmap.set_position([ll, bb - 0.04 * hh, ww, hh])
+# cities_coor_file = open("cities_coor.pickle", "rb")
+# cities_coor = pickle.load(cities_coor_file)
+# cities_coor_file.close()
 
 
-plt.show()
+# top_cities_file = open("top_cities.pickle", "rb")
+# top_cities = pickle.load(top_cities_file)
+# top_cities_file.close()
 
+
+# names = [cities_coor[i]['name'] for i in top_cities]
+
+# save_names = open(
+#     "names_cities.pickle", "wb")
+# pickle.dump(names, save_names, -1)
+# save_names.close()
+
+def show_plt(gran, method, geo_sort):
+
+    noremd_mat_file = open("noremd_mat_" + gran + ".pickle", "rb")
+    noremd_mat = pickle.load(noremd_mat_file)
+    noremd_mat_file.close()
+
+    names_file = open("names_" + gran + ".pickle", "rb")
+    names = pickle.load(names_file)
+    names_file.close()
+
+    print(len(noremd_mat))
+
+    if geo_sort:
+        geo_mat_file = open("geo_mat_" + gran + ".pickle", "rb")
+        geo_mat = pickle.load(geo_mat_file)
+        geo_mat_file.close()
+
+        linkage = hc.linkage(sp.distance.squareform(geo_mat), method=method)
+    else:
+        linkage = hc.linkage(sp.distance.squareform(
+            noremd_mat), method=method)
+
+    plt.xticks(rotation=0)
+
+    dendo = sns.clustermap(noremd_mat, row_linkage=linkage,
+                           col_linkage=linkage, cmap="jet", cbar_pos=(0.02, 0.01, .03, 0.7480577777777779))
+
+    leafs = dendo.dendrogram_col.reordered_ind
+    cluster_names = []
+    for i in leafs:
+        cluster_names.append(names[i])
+
+    positions = [i + 0.5 for i in range(len(names))]
+    dendo.ax_heatmap.set_xticklabels(cluster_names)
+
+    dendo.ax_heatmap.xaxis.set_ticks(positions)
+    dendo.ax_heatmap.xaxis.set_ticklabels(
+        cluster_names, rotation=45, fontsize=10)
+
+    dendo.ax_heatmap.yaxis.set_ticks(positions)
+    dendo.ax_heatmap.yaxis.set_ticklabels(
+        cluster_names, rotation=45, fontsize=10)
+
+    dendo.ax_heatmap.xaxis.set_ticks_position('top')
+    dendo.ax_heatmap.yaxis.set_ticks_position('left')
+
+    # hide lables
+
+    # dendo.ax_heatmap.axis('off')
+
+    dendo.ax_row_dendrogram.set_visible(False)
+    # dendo.ax_col_dendrogram.set_visible(False)
+
+    ll, bb, ww, hh = dendo.ax_heatmap.get_position().bounds
+
+    print(ll, bb, ww, hh)
+    dendo.ax_heatmap.set_position([ll, bb - 0.04 * hh, ww, hh])
+    dendo.ax_heatmap.set_title(gran + ", method: " + method +
+                               ", sorted by geo-dist: " + str(geo_sort))
+    # plt.title(gran + "Method: " + method +
+    #           " Sorted by geo-dist: " + str(geo_sort), fontsize=7)
+
+    plt.show()
+
+
+show_plt('states', 'complete', geo_sort=False)
