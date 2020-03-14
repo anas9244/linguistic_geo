@@ -41,7 +41,7 @@ import numpy as np
 # print(len(iter_results_jsd))
 
 
-#noremd_mat = np.zeros((len(D_jsd), len(D_jsd)))
+# noremd_mat = np.zeros((len(D_jsd), len(D_jsd)))
 
 
 # for i in range(len(D_jsd)):
@@ -79,6 +79,7 @@ import numpy as np
 # pickle.dump(names, save_names, -1)
 # save_names.close()
 
+
 def show_plt(gran, method, geo_sort):
 
     noremd_mat_file = open("noremd_mat_" + gran + ".pickle", "rb")
@@ -104,12 +105,17 @@ def show_plt(gran, method, geo_sort):
     plt.xticks(rotation=0)
 
     dendo = sns.clustermap(noremd_mat, row_linkage=linkage,
-                           col_linkage=linkage, cmap="jet", cbar_pos=(0.02, 0.01, .03, 0.7480577777777779))
+                           col_linkage=linkage, cmap="Reds", cbar_pos=(0.02, 0.01, .03, 0.7480577777777779))
 
     leafs = dendo.dendrogram_col.reordered_ind
+
+    print(type(dendo.ax_heatmap))
+    # print(leafs)
     cluster_names = []
     for i in leafs:
         cluster_names.append(names[i])
+
+    # print(cluster_names)
 
     positions = [i + 0.5 for i in range(len(names))]
     dendo.ax_heatmap.set_xticklabels(cluster_names)
@@ -143,5 +149,53 @@ def show_plt(gran, method, geo_sort):
 
     plt.show()
 
+    return noremd_mat, leafs, cluster_names
 
-show_plt('states', 'complete', geo_sort=False)
+
+noremd_mat, leafs, cluster_names = show_plt(
+    'cities', 'average', geo_sort=False)
+
+
+
+################################
+##########################
+
+# def show_mat(mat, names):
+
+#     fig = plt.figure()
+#     ax = fig.add_subplot()
+#     cax = ax.matshow(mat, cmap='Reds')
+#     fig.colorbar(cax)
+#     ticks = np.arange(0, len(names), 1)
+
+#     ax.set_xticks(ticks,)
+#     ax.set_yticks(ticks)
+#     ax.set_xticklabels(names, size=7)
+#     ax.set_yticklabels(names, size=7)
+#     # plt.axis('off')
+
+#     plt.show()
+
+
+# highlight_mat = np.empty(noremd_mat.shape)
+# # taget_names = ['OH', 'UT', 'IN', 'OK', 'KY', 'ND', 'WV']
+# taget_names=['Lewisville, TX','Santa Clarita, CA','Spokane, WA','Riverview, FL']
+# target_ind = [i for i in range(len(cluster_names))
+#                if cluster_names[i] in taget_names]
+
+
+# for i in range(len(leafs)):
+#     for j in range(len(leafs)):
+
+#         if i in target_ind:
+#             highlight_mat[i][j] = 0
+#         elif j in target_ind:
+#             highlight_mat[i][j] = 0
+#         else:
+#             highlight_mat[i][j] = noremd_mat[leafs[i]][leafs[j]]
+
+
+# show_mat(highlight_mat, cluster_names)
+# print(len(taget_names))
+# print(target_ind)
+# print(len(target_ind))

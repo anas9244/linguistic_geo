@@ -116,7 +116,7 @@ def show_mat(gran, geo=False):
     plt.show()
 
 
-show_mat('states', False)
+show_mat('cities', False)
 #>5000 : wordset 717, 63 iters, max: 317697
 
 

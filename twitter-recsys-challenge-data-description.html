@@ -1,0 +1,225 @@
+<!doctype html>
+<head>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  
+  <script>
+$(document).ready(function() {
+    $('#homepage_link').addClass('active');
+ })
+</script>
+
+</head>
+<title> RecSys 2020 Challenge </title>
+<link rel="stylesheet" href="/static/style.css">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+<div class="container">
+  <nav class="navbar navbar-expand-sm navbar-light bg-light .sticky-top" style="align:right">
+    <a class="navbar-brand" href="/">Twitter RecSys Challenge 2020</a>
+    <div class="navbar-collapse" id="navbarNavAltMarkup">
+      <div class="navbar-nav ml-auto">
+        <a class="nav-item nav-link" id="homepage_link" href="/">Challenge</a>
+        <a class="nav-item nav-link" id="leaderboard_link"  href="/leaderboard/latest">Leaderboard</a>
+        <a class="nav-item nav-link" id="leaderboard_link" target="_blank"  href="https://groups.google.com/forum/#!forum/recsys-challenge2020">Forum</a>
+        
+          <a class="nav-item nav-link" id="register_link" href="/auth/register">Register</a>
+          <a class="nav-item nav-link" id="login_link"  href="/auth/login">Log In</a>
+        
+      </div>
+    </div>
+  </nav>
+</div>
+
+
+
+<div class="content container">
+  <header>
+    
+  </header>
+  
+<p class="h3">Introduction</p>
+<p>
+Twitter is what’s happening in the world and what people are talking about right now. On Twitter, live comes to life as conversations unfold, showing you all sides of the story. From breaking news and entertainment to sports, politics and everyday interests, when things happen in the world, they happen first on Twitter. 
+</p>
+<p>
+On the platform, users post and engage with (in the form of Likes, Replies, Retweets and Retweets with comments) content known as “Tweets”. This challenge aims to evaluate novel algorithms for predicting different engagement rates at a large scale, and push the state-of-the-art in recommender systems. Following the success and advancements in the domain of top-K recommendations, we aim to encourage the development of new approaches by releasing the largest real-world dataset to predict user engagements. The dataset comprises of roughly 200 million public engagements, along with user and engagement features, that span a period of 2 weeks and contain public interactions (Like, Reply, Retweet and Retweet with comment), as well as 100 million pseudo negatives which are randomly sampled from the public follow graph. While sampling the latter pool of Tweets, we take special care about preserving user privacy. 
+</p>
+<p>
+The submitted methods will be evaluated on a held-out test set generated from more recent Tweets on the platform, and the evaluation metrics will include precision-recall area under curve (PR-AUC) and cross-entropy loss. Participants will also be provided with a validation set, for which the engagement information will be missing. Paying special attention to our users’ privacy, the dataset will be updated daily to ensure GDPR-compliance and the corresponding metrics will be updated on the leaderboard.
+</p>
+<p class="h3">Prizes</p>
+<p>
+Twitter, as a sponsor of this challenge is providing the dataset, on which all methods will be evaluated. The best three teams will be rewarded with the following prizes:
+</p>
+<ul>
+  <li>Winner: $15,000</li>    
+  <li>Second team: $10,000</li>
+  <li>Third team: $5,000</li>
+</ul>
+<p class="h3">Dataset description</p>
+<p>The Data is available to download <a href="/data/show-downloads">here</a>. Fields in each data entry are separated by the <em>1</em> character (<em>0x31 in UTF-8</em>) and each data entry will be characterized by the following features:</p>
+<div id="dataset_description" class="table-responsive">
+  <table class="table table-bordered">
+    <thead class="thead-light">
+      <tr>
+        <th scope="col"></th>
+        <th scope="col">Feature Name</th>
+        <th scope="col">Feature Type</th>
+        <th scope="col">Feature Description</th>
+      </tr>
+      <tr>
+        <td class="align-middle">Tweet Features</td>
+        <td class="align-middle">
+          <ul class="list-unstyled feature-names">
+            <li>Text tokens</li>
+            <li>Hashtags</li>
+            <li>Tweet id</li>
+            <li>Present media</li>
+            <li>Present links</li>
+            <li>Present domains</li>
+            <li>Tweet type</li>
+            <li>Language</li>
+            <li>Timestamp</li>
+          </ul>
+        </td>
+        <td class="align-middle">
+          <ul class="list-unstyled feature-types">
+            <li>List[long]</li>
+            <li>List[string]</li>
+            <li>String</li>
+            <li>List[String]</li>
+            <li>List[string]</li>
+            <li>List[string]</li>
+            <li>String</li>
+            <li>String</li>
+            <li>Long</li>
+          </ul>
+        </td>
+        <td class="align-middle">
+          <ul class="list-unstyled feature-description">
+            <li>Ordered list of Bert ids corresponding to Bert tokenization of Tweet text</li>
+            <li>Tab separated list of hastags (identifiers) present in the tweet</li>
+            <li>Tweet identifier</li>
+            <li>Tab separated list of media types. Media type can be in (Photo, Video, Gif)</li>
+            <li>Tab separeted list of links (identifiers) included in the Tweet</li>
+            <li>Tab separated list of domains included in the Tweet (twitter.com, dogs.com)</li>
+            <li>Tweet type, can be either Retweet, Quote, Reply, or Toplevel</li>
+            <li>Identifier corresponding to the inferred language of the Tweet</li>
+            <li>Unix timestamp, in sec of the creation time of the Tweet</li>
+          </ul>
+        </td>
+      </tr>
+      <tr>
+        <td class="align-middle">Engaged With User Features</td>
+        <td class="align-middle">
+          <ul class="list-unstyled feature-names">
+            <li>User id</li>
+            <li>Follower count</li>
+            <li>Following count</li>
+            <li>Is verified?</li>
+            <li>Account creation time</li>
+          </ul>
+        </td>
+        <td class="align-middle">
+          <ul class="list-unstyled feature-types">
+            <li>String</li>
+            <li>Long</li>
+            <li>Long</li>
+            <li>Bool</li>
+            <li>Long</li>
+          </ul>
+        </td>
+        <td class="align-middle">
+          <ul class="list-unstyled feature-description">
+            <li>User identifier</li>
+            <li>Number of followers of the user</li>
+            <li>Number of accounts the user is following</li>
+            <li>Is the account verified?</li>
+            <li>Unix timestamp, in seconds, of the creation time of the account</li>
+          </ul>
+        </td>
+      </tr>
+      <tr>
+        <td class="align-middle">Engaging User Features</td>
+        <td class="align-middle">
+          <ul class="list-unstyled feature-names">
+            <li>User id</li>
+            <li>Follower count</li>
+            <li>Following count</li>
+            <li>Is verified?</li>
+            <li>Account creation time</li>
+          </ul>
+        </td>
+        <td class="align-middle">
+          <ul class="list-unstyled feature-types">
+            <li>String</li>
+            <li>Long</li>
+            <li>Long</li>
+            <li>Bool</li>
+            <li>Long</li>
+          </ul>
+        </td>
+        <td class="align-middle">
+          <ul class="list-unstyled feature-description">
+            <li>User identifier</li>
+            <li>Number of followers of the user</li>
+            <li>Number of accounts the user is following</li>
+            <li>Is the account verified?</li>
+            <li>Unix timestamp, in seconds, of the creation time of the account</li>
+          </ul>
+        </td>
+      </tr>
+      <tr>
+        <td class="align-middle">Engagement Features</td>
+        <td class="align-middle">
+          <ul class="list-unstyled feature-names">
+            <li>Engagee follows engager?</li>
+            <li>Reply engagement timestamp</li>
+            <li>Retweet engagement timestamp</li>
+            <li>Retweet with comment engagement timestamp</li>
+            <li>Like engagement timestamp</li>
+          </ul>
+        </td>
+        <td class="align-middle">
+          <ul class="list-unstyled feature-types">
+            <li>Bool</li>
+            <li>Long</li>
+            <li>Long</li>
+            <li>Long</li>
+            <li>Long</li>
+          </ul>
+        </td>
+        <td class="align-middle">
+          <ul class="list-unstyled feature-description">
+            <li>Does the account of the engaged tweet author follow the account that has made the engagement?</li>
+            <li>If there is at least one, unix timestamp, in s, of one of the replies</li>
+            <li>If there is one, unix timestamp, in s, of the retweet of the tweet by the engaging user</li>
+            <li>If there is at least one, unix timestamp, in s, of one of the retweet with comment of the tweet by the engaging user</li>
+            <li>If there is one, Unix timestamp, in s, of the like</li>
+          </ul>
+        </td>
+      </tr>
+  </table>
+</div>
+<p>In total, we are going to release 3 datasets:</p>
+<ul>
+    <li>A training set, obtained by subsampling positive interactions within 1 week </li>
+    <li>A test set (10% of train), sampled from the following week</li>
+    <li>A validation set (10% of train), sampled from the following week</li>
+</ul>
+<p>The dataset includes data features that are publicly available, and are described in greater detail in the <a href="https://developer.twitter.com/">Twitter Developer</a> documentation.</p>
+
+<p>
+In order for participants to gain access to this dataset, each individual needs to register for a developer account through the following <a href="https://developer.twitter.com/en/application/use-case">link</a>. It is advised to do so as early as possible, as access to the data cannot be granted without prior authorisation.
+</p>
+<p>
+As part of the RecSys Challenge, you may access Twitter Content (as defined in <a href="https://developer.twitter.com/en/developer-terms/agreement-and-policy">Twitter Developer Agreement and Policy</a>). Your access to and use of the Twitter Content is governed by the <a href="https://developer.twitter.com/en/developer-terms/agreement-and-policy">Twitter Developer Agreement and Policy</a> ). Your access to the Twitter Content is limited to the purposes of the RecSys Challenge and those approved via the <a href="https://developer.twitter.com/en/application/use-case">application process</a>. The <a href="https://developer.twitter.com/en/developer-terms/agreement-and-policy">Twitter Developer Agreement and Policy</a> do not expand the license to the Twitter Content.
+</p>
+<p>
+In addition to the restrictions set out in the <a href="https://developer.twitter.com/en/developer-terms/agreement-and-policy">Twitter Developer Agreement and Policy</a>, isolating individual Tweets or users for purposes other than participation in this challenge is strictly forbidden. Other restricted uses of the dataset can be found <a href="https://developer.twitter.com/en/developer-terms/more-on-restricted-use-cases">here</a>. 
+</p>
+<p>
+In order to participate in the RecSys Challenge, individuals need to sign up <a href="https://developer.twitter.com/en/application/use-case">here</a> and <a href="/auth/register">here</a> to agree to the <a href="https://developer.twitter.com/en/developer-terms/agreement-and-policy">Twitter Developer Agreement and Policy</a> and RecSys Challenge's Terms & Conditions listed <a href="">here</a>. Twitter is only providing a data set solely as a sponsor of Recsys Challenge 2020. Twitter is not responsible for the RecSys Challenge, which shall be controlled and administered by RecSys as explained <a href="https://recsys.acm.org/recsys20/challenge/">here</a> and <a href="http://www.recsyschallenge.com/2020/Terms%20and%20Conditions%20in%20the%20RecSys%20Challenge%202020.pdf">here</a>. Following the RecSys Challenge, Twitter may make the dataset available for researchers to access subject to the <a href="https://developer.twitter.com/en/developer-terms/agreement-and-policy">Twitter Developer Agreement and Policy</a>. 
+</p>
+
+</div>
