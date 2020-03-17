@@ -105,7 +105,7 @@ def show_plt(gran, method, geo_sort):
     plt.xticks(rotation=0)
 
     dendo = sns.clustermap(noremd_mat, row_linkage=linkage,
-                           col_linkage=linkage, cmap="Reds", cbar_pos=(0.02, 0.01, .03, 0.7480577777777779))
+                           col_linkage=linkage, cmap="jet", cbar_pos=(0.02, 0.01, .03, 0.7480577777777779))
 
     leafs = dendo.dendrogram_col.reordered_ind
 
@@ -154,7 +154,6 @@ def show_plt(gran, method, geo_sort):
 
 noremd_mat, leafs, cluster_names = show_plt(
     'cities', 'average', geo_sort=False)
-
 
 
 ################################
