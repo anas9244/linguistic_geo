@@ -12,13 +12,11 @@ import numpy as np
 import plotly.graph_objects as go
 
 
-
-
 def show_mat(mat, names, target_names):
 
     fig = plt.figure()
     ax = fig.add_subplot()
-    cax = ax.matshow(mat, cmap='Reds')
+    cax = ax.matshow(mat, cmap='PuRd')
     fig.colorbar(cax)
     ticks = np.arange(0, len(names), 1)
 
@@ -37,28 +35,8 @@ def show_mat(mat, names, target_names):
     plt.axis('off')
     # ax.xaxis.set
 
-    plt.savefig('highlight_mat.png', dpi=1000)
+    #plt.savefig('highlight_mat.png', dpi=1000)
     plt.show()
-
-    values=[1,1,1,1]
-
-    fig = go.Figure(data=go.Choropleth(
-        locations=list(target_names),  # Spatial coordinates
-        z=list(values),  # Data to be color-coded
-        locationmode='USA-states',  # set of locations match entries in `locations`
-        colorscale='matter',
-        colorbar_title="Cluster",
-        reversescale=True,
-
-    ))
-
-    fig.update_layout(
-        title_text='KMedoids-CLustering, ' +
-        measure + ' , clusters: ' + str(n),
-        geo_scope='usa',  # limite map scope to USA
-    )
-
-    fig.show()
 
 
 def show_plt(gran, method, geo_sort):
@@ -113,80 +91,39 @@ def show_plt(gran, method, geo_sort):
 
     show_mat(highlight_mat, cluster_names, taget_names)
 
-    # positions = [i + 0.5 for i in range(len(names))]
-    # dendo.ax_heatmap.set_xticklabels(cluster_names)
 
-    # dendo.ax_heatmap.xaxis.set_ticks(positions)
-    # dendo.ax_heatmap.xaxis.set_ticklabels(
-    #     cluster_names, rotation=45, fontsize=10)
+show_plt('cities', 'average', False)
 
-    # dendo.ax_heatmap.yaxis.set_ticks(positions)
-    # dendo.ax_heatmap.yaxis.set_ticklabels(
-    #     cluster_names, rotation=45, fontsize=10)
+# positions = [i + 0.5 for i in range(len(names))]
+# dendo.ax_heatmap.set_xticklabels(cluster_names)
 
-    # dendo.ax_heatmap.xaxis.set_ticks_position('top')
-    # dendo.ax_heatmap.yaxis.set_ticks_position('left')
-    # plt.xticks(rotation=0)
-    # # hide lables
+# dendo.ax_heatmap.xaxis.set_ticks(positions)
+# dendo.ax_heatmap.xaxis.set_ticklabels(
+#     cluster_names, rotation=45, fontsize=10)
 
-    # # dendo.ax_heatmap.axis('off')
+# dendo.ax_heatmap.yaxis.set_ticks(positions)
+# dendo.ax_heatmap.yaxis.set_ticklabels(
+#     cluster_names, rotation=45, fontsize=10)
 
-    # dendo.ax_row_dendrogram.set_visible(False)
-    # # dendo.ax_col_dendrogram.set_visible(False)
+# dendo.ax_heatmap.xaxis.set_ticks_position('top')
+# dendo.ax_heatmap.yaxis.set_ticks_position('left')
+# plt.xticks(rotation=0)
+# # hide lables
 
-    # ll, bb, ww, hh = dendo.ax_heatmap.get_position().bounds
+# # dendo.ax_heatmap.axis('off')
 
-    # print(ll, bb, ww, hh)
-    # dendo.ax_heatmap.set_position([ll, bb - 0.04 * hh, ww, hh])
-    # dendo.ax_heatmap.set_title(gran + ", method: " + method +
-    #                            ", sorted by geo-dist: " + str(geo_sort))
-    # # plt.title(gran + "Method: " + method +
-    # #           " Sorjetted by geo-dist: " + str(geo_sort), fontsize=7)
+# dendo.ax_row_dendrogram.set_visible(False)
+# # dendo.ax_col_dendrogram.set_visible(False)
 
-    # plt.show()
+# ll, bb, ww, hh = dendo.ax_heatmap.get_position().bounds
 
-    # return noremd_mat, leafs, cluster_names
+# print(ll, bb, ww, hh)
+# dendo.ax_heatmap.set_position([ll, bb - 0.04 * hh, ww, hh])
+# dendo.ax_heatmap.set_title(gran + ", method: " + method +
+#                            ", sorted by geo-dist: " + str(geo_sort))
+# # plt.title(gran + "Method: " + method +
+# #           " Sorjetted by geo-dist: " + str(geo_sort), fontsize=7)
 
+# plt.show()
 
-show_plt('cities', 'average', True)
-
-
-# def show_mat(mat, names):
-
-#     fig = plt.figure()
-#     ax = fig.add_subplot()
-#     cax = ax.matshow(mat, cmap='Reds')
-#     fig.colorbar(cax)
-#     ticks = np.arange(0, len(names), 1)
-
-#     ax.set_xticks(ticks,)
-#     ax.set_yticks(ticks)
-#     ax.set_xticklabels(names, size=7)
-#     ax.set_yticklabels(names, size=7)
-#     # plt.axis('off')
-
-#     plt.show()
-
-
-# highlight_mat = np.empty(noremd_mat.shape)
-# # taget_names = ['OH', 'UT', 'IN', 'OK', 'KY', 'ND', 'WV']
-# taget_names=['Lewisville, TX','Santa Clarita, CA','Spokane, WA','Riverview, FL']
-# target_ind = [i for i in range(len(cluster_names))
-#                if cluster_names[i] in taget_names]
-
-
-# for i in range(len(leafs)):
-#     for j in range(len(leafs)):
-
-#         if i in target_ind:
-#             highlight_mat[i][j] = 0
-#         elif j in target_ind:
-#             highlight_mat[i][j] = 0
-#         else:
-#             highlight_mat[i][j] = noremd_mat[leafs[i]][leafs[j]]
-
-
-# show_mat(highlight_mat, cluster_names)
-# print(len(taget_names))
-# print(target_ind)
-# print(len(target_ind))
+# return noremd_mat, leafs, cluster_names
