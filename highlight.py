@@ -12,7 +12,9 @@ import numpy as np
 import plotly.graph_objects as go
 
 
-def show_mat(mat, names):
+
+
+def show_mat(mat, names, target_names):
 
     fig = plt.figure()
     ax = fig.add_subplot()
@@ -20,14 +22,43 @@ def show_mat(mat, names):
     fig.colorbar(cax)
     ticks = np.arange(0, len(names), 1)
 
-    # ax.set_xticks(ticks,)
-    # ax.set_yticks(ticks)
-    # ax.set_xticklabels(names, size=7, rotation=45)
-    # ax.set_yticklabels(names, size=7)
+    ax.set_xticks(ticks,)
+    ax.set_yticks(ticks)
+    highlight_names = []
+    for name in names:
+        if name in target_names:
+            highlight_names.append(name)
+        else:
+            highlight_names.append(None)
+
+    ax.set_xticklabels(highlight_names, size=5, rotation=45)
+    ax.set_yticklabels(highlight_names, size=5)
 
     plt.axis('off')
+    # ax.xaxis.set
+
     plt.savefig('highlight_mat.png', dpi=1000)
     plt.show()
+
+    values=[1,1,1,1]
+
+    fig = go.Figure(data=go.Choropleth(
+        locations=list(target_names),  # Spatial coordinates
+        z=list(values),  # Data to be color-coded
+        locationmode='USA-states',  # set of locations match entries in `locations`
+        colorscale='matter',
+        colorbar_title="Cluster",
+        reversescale=True,
+
+    ))
+
+    fig.update_layout(
+        title_text='KMedoids-CLustering, ' +
+        measure + ' , clusters: ' + str(n),
+        geo_scope='usa',  # limite map scope to USA
+    )
+
+    fig.show()
 
 
 def show_plt(gran, method, geo_sort):
@@ -64,6 +95,7 @@ def show_plt(gran, method, geo_sort):
     #taget_names = ['OH', 'UT', 'IN', 'OK', 'KY', 'ND', 'WV']
     taget_names = ['Lewisville, TX', 'Santa Clarita, CA',
                    'Spokane, WA', 'Riverview, FL']
+
     target_ind = [i for i in range(len(cluster_names))
                   if cluster_names[i] in taget_names]
 
@@ -72,14 +104,14 @@ def show_plt(gran, method, geo_sort):
     for i in range(len(leaves)):
         for j in range(len(leaves)):
 
-            if i in target_ind:
-                highlight_mat[i][j] = 2
-            elif j in target_ind:
-                highlight_mat[i][j] = 2
-            else:
-                highlight_mat[i][j] = noremd_mat[leaves[i]][leaves[j]]
+            # if i in target_ind:
+            #     highlight_mat[i][j] = 1.8
+            # elif j in target_ind:
+            #     highlight_mat[i][j] = 1.8
+            # else:
+            highlight_mat[i][j] = noremd_mat[leaves[i]][leaves[j]]
 
-    show_mat(highlight_mat, cluster_names)
+    show_mat(highlight_mat, cluster_names, taget_names)
 
     # positions = [i + 0.5 for i in range(len(names))]
     # dendo.ax_heatmap.set_xticklabels(cluster_names)
