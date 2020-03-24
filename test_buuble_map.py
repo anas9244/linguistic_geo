@@ -120,7 +120,7 @@ fig.update_layout(
     )
 )
 
-fig.update_traces(marker=dict(size=80,
+fig.update_traces(marker=dict(size=60,
                               line=dict(width=2,
                                         color='DarkSlateGrey')),
                   textfont=dict(
