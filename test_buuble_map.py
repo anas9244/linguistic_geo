@@ -102,8 +102,7 @@ fig = go.Figure(data=go.Scattergeo(
     lon=[lon[1] for lon in cities_loc],
     lat=[lon[0] for lon in cities_loc],
     text=cities_text,
-    mode='markers+text', textposition='bottom center',
-    size=[5000] * 4
+    mode='markers+text', textposition='bottom center'
 
 ))
 
@@ -120,4 +119,12 @@ fig.update_layout(
         landcolor='rgb(217, 217, 217)',
     )
 )
+
+fig.update_traces(marker=dict(size=120,
+                              line=dict(width=2,
+                                        color='DarkSlateGrey')),
+                  textfont=dict(
+    family="sans serif",
+    size=71
+))
 fig.show()
