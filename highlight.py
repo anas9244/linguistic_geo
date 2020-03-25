@@ -16,33 +16,36 @@ def show_mat(mat, names, target_names):
 
     fig = plt.figure()
     ax = fig.add_subplot()
-    cax = ax.matshow(mat, cmap='PuRd')
+    cax = ax.matshow(mat, cmap='Reds')
     fig.colorbar(cax)
     ticks = np.arange(0, len(names), 1)
 
     ax.set_xticks(ticks,)
     ax.set_yticks(ticks)
     highlight_names = []
-    for name in names:
-        if name in target_names:
-            highlight_names.append(name)
-        else:
-            highlight_names.append(None)
+    # for name in names:
+    #     if name in target_names:
+    #         highlight_names.append(name)
+    #     else:
+    #         highlight_names.append(None)
 
-    ax.set_xticklabels(highlight_names, size=5, rotation=45)
-    ax.set_yticklabels(highlight_names, size=5)
+    ax.set_xticklabels(names, size=4, rotation=45)
+    ax.set_yticklabels(names, size=4)
 
-    plt.axis('off')
+    # plt.axis('off')
     # ax.xaxis.set
 
-    #plt.savefig('highlight_mat.png', dpi=1000)
+    plt.savefig('archive/jsd.png', dpi=500)
     plt.show()
 
 
 def show_plt(gran, method, geo_sort):
 
-    noremd_mat_file = open("noremd_mat_" + gran + ".pickle", "rb")
+    noremd_mat_file = open("iter_results_jsd_states.pickle", "rb")
+
+    #noremd_mat_file = open("noremd_mat_" + gran + ".pickle", "rb")
     noremd_mat = pickle.load(noremd_mat_file)
+    noremd_mat = sum(noremd_mat) / len(noremd_mat)
     noremd_mat_file.close()
 
     names_file = open("names_" + gran + ".pickle", "rb")
@@ -89,10 +92,11 @@ def show_plt(gran, method, geo_sort):
             # else:
             highlight_mat[i][j] = noremd_mat[leaves[i]][leaves[j]]
 
-    show_mat(highlight_mat, cluster_names, taget_names)
+    #show_mat(highlight_mat, cluster_names, taget_names)
+    show_mat(noremd_mat, names, taget_names)
 
 
-show_plt('cities', 'average', False)
+show_plt('states', 'average', False)
 
 # positions = [i + 0.5 for i in range(len(names))]
 # dendo.ax_heatmap.set_xticklabels(cluster_names)

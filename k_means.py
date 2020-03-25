@@ -37,6 +37,9 @@ clusters_names = {'AK': 0, 'AL': 1, 'AR': 6, 'AZ': 3, 'CA': 3, 'CO': 2, 'CT': 4,
                   'SD': 5, 'TN': 1, 'TX': 6, 'UT': 2, 'VA': 1, 'VT': 4, 'WA': 0, 'WI': 5, 'WV': 4, 'WY': 2}
 
 #names = [n for n in clusters_names.keys()]
+names_file = open("names_states.pickle", "rb")
+names = pickle.load(names_file)
+names_file.close()
 
 
 def cluster(n, measure):
@@ -49,15 +52,17 @@ def cluster(n, measure):
         mat = "iter_results_tfidf_new"
     if measure == 'jsd':
         mat = "iter_results_jsd_merged_new"
+    if measure == "normed":
+        mat = "noremd_mat_states"
 
     result_mat_file = open(mat + '.pickle', "rb")
     result_mat = pickle.load(result_mat_file)
     result_mat_file.close()
 
-    average_mat = sum(result_mat) / len(result_mat)
+    #average_mat = sum(result_mat) / len(result_mat)
 
     clustering = KMedoids(
-        n_clusters=n, metric='precomputed').fit_predict(average_mat)
+        n_clusters=n, metric='precomputed').fit_predict(result_mat)
     print(clustering)
 
     values = list(clustering)
@@ -103,7 +108,7 @@ def get_dendo(measure, method):
     #keys = list(states_zscores.keys())
 
     dendrogram(sch.linkage(
-        result_mat, method=method),  leaf_font_size=10)
+        result_mat, method=method), leaf_font_size=10)
 
     plt.xticks(rotation=0)
     plt.title('Hierarchical Clustering Dendrogram based on ' +
@@ -117,9 +122,9 @@ def get_dendo(measure, method):
 # z
 # tfidf
 # jsd
-#cluster(7, 'z')
+cluster(7, 'normed')
 
-get_dendo('z', 'average')
+get_dendo('normed', 'average')
 
 
 # dendrogram=sch.dendrogram(sch.linkage(average_mat,method='complete',optimal_ordering=False),labels=keys,leaf_font_size=10)
