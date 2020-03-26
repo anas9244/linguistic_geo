@@ -8,6 +8,7 @@ from matplotlib import pyplot as plt
 import scipy.cluster.hierarchy as sch
 import os
 from scipy.cluster.hierarchy import ward, dendrogram
+import plotly.express as px
 
 
 # def prepend(list, str):
@@ -66,10 +67,19 @@ def cluster(n, measure):
     print(clustering)
 
     values = list(clustering)
+    values_str = [str(v) for v in values]
+
+    # fig = px.choropleth(z=list(values), color=values_str,
+    #                     locations=list(names), locationmode='USA-states', colorbar_title="Cluster",
+
+    #                     )
+    # fig.update_geos(fitbounds="locations", visible=False)
+    # fig.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0})
+    # fig.show()
 
     fig = go.Figure(data=go.Choropleth(
         locations=list(names),  # Spatial coordinates
-        z=list(values),  # Data to be color-coded
+        z=list(values_str),  # Data to be color-coded
         locationmode='USA-states',  # set of locations match entries in `locations`
         colorscale='matter',
         colorbar_title="Cluster",
