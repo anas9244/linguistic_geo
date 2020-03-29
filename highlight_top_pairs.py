@@ -29,10 +29,10 @@ def show_mat(mat, names, target_names):
     #     else:
     #         highlight_names.append(None)
 
-    ax.set_xticklabels(names, size=7, rotation=45)
-    ax.set_yticklabels(names, size=7)
+    ax.set_xticklabels(names, size=4, rotation=45)
+    ax.set_yticklabels(names, size=4)
 
-    plt.axis('off')
+    # plt.axis('off')
     # ax.xaxis.set
 
     #plt.savefig('archive/jsd.png', dpi=500)
@@ -64,7 +64,16 @@ def show_plt(gran, method, geo_sort):
         linkage = hc.linkage(sp.distance.squareform(
             noremd_mat), method=method)
 
-    print(linkage.shape)
+    state_deltas = []
+
+    for index, x in enumerate(noremd_mat):
+        values = [val for val in x if val > 0]
+        min_dist = min(values)
+        min_dist_i = np.argmin(values)
+        state01 = index
+        state02 = min_dist_i
+
+        state_deltas.append((state01, state02))
 
     dendo = dendrogram(linkage)
 
@@ -89,46 +98,12 @@ def show_plt(gran, method, geo_sort):
 
             # if i in target_ind:
             #     highlight_mat[i][j] = 1.8
-            # elif j in target_ind:
-            #     highlight_mat[i][j] = 1.8
-            # else:
-            highlight_mat[i][j] = noremd_mat[leaves[i]][leaves[j]]
+            if j == state_deltas[i][1]:
+                highlight_mat[i][j] = -1
+            else:
+                highlight_mat[i][j] = noremd_mat[leaves[i]][leaves[j]]
 
     show_mat(highlight_mat, cluster_names, taget_names)
 
 
-show_plt('cities', 'ward', False)
-
-# positions = [i + 0.5 for i in range(len(names))]
-# dendo.ax_heatmap.set_xticklabels(cluster_names)
-
-# dendo.ax_heatmap.xaxis.set_ticks(positions)
-# dendo.ax_heatmap.xaxis.set_ticklabels(
-#     cluster_names, rotation=45, fontsize=10)
-
-# dendo.ax_heatmap.yaxis.set_ticks(positions)
-# dendo.ax_heatmap.yaxis.set_ticklabels(
-#     cluster_names, rotation=45, fontsize=10)
-
-# dendo.ax_heatmap.xaxis.set_ticks_position('top')
-# dendo.ax_heatmap.yaxis.set_ticks_position('left')
-# plt.xticks(rotation=0)
-# # hide lables
-
-# # dendo.ax_heatmap.axis('off')
-
-# dendo.ax_row_dendrogram.set_visible(False)
-# # dendo.ax_col_dendrogram.set_visible(False)
-
-# ll, bb, ww, hh = dendo.ax_heatmap.get_position().bounds
-
-# print(ll, bb, ww, hh)
-# dendo.ax_heatmap.set_position([ll, bb - 0.04 * hh, ww, hh])
-# dendo.ax_heatmap.set_title(gran + ", method: " + method +
-#                            ", sorted by geo-dist: " + str(geo_sort))
-# # plt.title(gran + "Method: " + method +
-# #           " Sorjetted by geo-dist: " + str(geo_sort), fontsize=7)
-
-# plt.show()
-
-# return noremd_mat, leafs, cluster_names
+show_plt('cities', 'average', False)
