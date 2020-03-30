@@ -40,26 +40,30 @@ taget_names = ['Lewisville, TX', 'Santa Clarita, CA',
 
 # print(len(names_citie))
 
-linkage = linkage(sp.distance.squareform(
-    dist_cities_mat), method='ward')
+#######################################
+
+linkage = linkage(#sp.distance.squareform(
+    dist_cities_mat, method='complete',metric='precomputed ')
 
 clustering = fcluster(linkage, 7, criterion='maxclust')
-
+###############################
 
 # clustering = KMedoids(
-#     n_clusters=6, metric='precomputed').fit_predict(dist_cities_mat)
+#     n_clusters=5, metric='precomputed').fit_predict(dist_cities_mat)
 
 # print(list(clustering.labels_))
 
-for i in range(7):
+for i in range(1, 7):
     print(i, list(clustering).count(i))
 
+# 1 13
+# 2 434
 
-file_out = open("aglo_ward_7_cluster_cities.json", 'w', encoding="utf-8")
+# file_out = open("aglo_ward_7_cluster_cities.json", 'w', encoding="utf-8")
 
 
-for index, c in enumerate(clustering):
-    record = {  # 'city_id': top_cities[index],
-        "city_name": names_citie[index], 'cluster': int(c)}
-    json.dump(record, file_out, ensure_ascii=False)
-    file_out.write("\n")
+# for index, c in enumerate(clustering):
+#     record = {  # 'city_id': top_cities[index],
+#         "city_name": names_citie[index], 'cluster': int(c)}
+#     json.dump(record, file_out, ensure_ascii=False)
+#     file_out.write("\n")
