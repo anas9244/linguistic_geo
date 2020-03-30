@@ -5,7 +5,10 @@ import json
 
 import scipy.spatial as sp
 
-from scipy.cluster.hierarchy import fcluster, linkage
+from scipy.cluster.hierarchy import fcluster, linkage, correspond
+import matplotlib.pyplot as plt
+
+import numpy as np
 
 # city_tweets_file = open("city_tweets_dict.pickle", "rb")
 # city_tweets = pickle.load(city_tweets_file)
@@ -42,20 +45,43 @@ taget_names = ['Lewisville, TX', 'Santa Clarita, CA',
 
 #######################################
 
-linkage = linkage(#sp.distance.squareform(
-    dist_cities_mat, method='complete',metric='precomputed ')
+# linkage = linkage(sp.distance.squareform(
+#     dist_cities_mat), method='single')
 
-clustering = fcluster(linkage, 7, criterion='maxclust')
-###############################
+# clustering = fcluster(linkage, t=7, criterion='maxclust')
 
-# clustering = KMedoids(
-#     n_clusters=5, metric='precomputed').fit_predict(dist_cities_mat)
+#######################################
+
+clustering = KMedoids(
+    n_clusters=7, metric='precomputed').fit_predict(dist_cities_mat)
+
+# clustering = AgglomerativeClustering(
+#     7, affinity='precomputed', linkage='complete').fit(dist_cities_mat)
+
+print(len(sp.distance.squareform(
+    dist_cities_mat)))
+
+# print(correspond(linkage, sp.distance.squareform(
+#     dist_cities_mat)))
 
 # print(list(clustering.labels_))
-
-for i in range(1, 7):
+print(clustering)
+print(len(set(clustering)))
+for i in range(1, len(set(clustering))):
     print(i, list(clustering).count(i))
 
+x = np.arange(0, len(set(clustering)))
+values = []
+
+for i in range(0, len(set(clustering))):
+    values.append(list(clustering).count(i))
+
+
+plt.bar(x, values)
+plt.title("KMedoids")
+plt.xlabel("cluster_lables")
+plt.ylabel("cities")
+plt.show()
 # 1 13
 # 2 434
 
