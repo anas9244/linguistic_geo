@@ -44,52 +44,46 @@ taget_names = ['Lewisville, TX', 'Santa Clarita, CA',
 # print(len(names_citie))
 
 #######################################
+def clustering(n_clusters, method):
 
-# linkage = linkage(sp.distance.squareform(
-#     dist_cities_mat), method='single')
+    global linkage
+    linkage = linkage(sp.distance.squareform(
+        dist_cities_mat), method=method)
 
-# clustering = fcluster(linkage, t=7, criterion='maxclust')
+    clustering = fcluster(linkage, t=n_clusters, criterion='maxclust')
 
-#######################################
+    #######################################
 
-clustering = KMedoids(
-    n_clusters=7, metric='precomputed').fit_predict(dist_cities_mat)
+    # clustering = KMedoids(
+    #     n_clusters=7, metric='precomputed').fit_predict(dist_cities_mat)
 
-# clustering = AgglomerativeClustering(
-#     7, affinity='precomputed', linkage='complete').fit(dist_cities_mat)
+    # clustering = AgglomerativeClustering(
+    #     n_clusters, affinity='precomputed', linkage=method).fit(dist_cities_mat)
 
-print(len(sp.distance.squareform(
-    dist_cities_mat)))
+    print(len(set(clustering)))
+    for i in range(1, len(set(clustering)) + 1):
+        print(i, list(clustering).count(i))
 
-# print(correspond(linkage, sp.distance.squareform(
-#     dist_cities_mat)))
+    x = np.arange(1, len(set(clustering)) + 1)
+    values = []
 
-# print(list(clustering.labels_))
-print(clustering)
-print(len(set(clustering)))
-for i in range(1, len(set(clustering))):
-    print(i, list(clustering).count(i))
+    for i in range(1, len(set(clustering)) + 1):
+        values.append(list(clustering).count(i))
 
-x = np.arange(0, len(set(clustering)))
-values = []
+    plt.bar(x, values)
+    plt.title(method)
+    plt.xlabel("cluster_lables")
+    plt.ylabel("cities")
+    plt.show()
 
-for i in range(0, len(set(clustering))):
-    values.append(list(clustering).count(i))
+    file_out = open(method + "/" + str(n_clusters) +
+                    "_cluster_cities.json", 'w', encoding="utf-8")
 
-
-plt.bar(x, values)
-plt.title("KMedoids")
-plt.xlabel("cluster_lables")
-plt.ylabel("cities")
-plt.show()
-# 1 13
-# 2 434
-
-# file_out = open("aglo_ward_7_cluster_cities.json", 'w', encoding="utf-8")
+    for index, c in enumerate(clustering):
+        record = {'city_id': top_cities[index],
+                  "city_name": names_citie[index], 'cluster': int(c)}
+        json.dump(record, file_out, ensure_ascii=False)
+        file_out.write("\n")
 
 
-# for index, c in enumerate(clustering):
-#     record = {  # 'city_id': top_cities[index],
-#         "city_name": names_citie[index], 'cluster': int(c)}
-#     json.dump(record, file_out, ensure_ascii=False)
-#     file_out.write("\n")
+clustering(7, "complete")

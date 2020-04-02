@@ -5,7 +5,7 @@ from operator import itemgetter
 import math
 
 import numpy as np
-
+import time
 # new_tweets_dict_file = open("normed_tweets.pickle", "rb")
 # new_tweets_dict = pickle.load(new_tweets_dict_file)
 # new_tweets_dict_file.close()
@@ -52,7 +52,7 @@ def translate(value, leftMin, leftMax):
 # print(len(iter_results_jsd))
 
 
-# noremd_mat_tfidf = np.zeros((len(D_jsd), len(D_jsd)))
+# noremd_mat = np.zeros((len(D_jsd), len(D_jsd)))
 
 # D_jsd_max = D_jsd.max()
 # D_Z_max = D_Z.max()
@@ -73,7 +73,7 @@ def translate(value, leftMin, leftMax):
 #         x = np.array([D_Z_norm, D_tfidf_norm, D_jsd_norm])
 #         print(np.linalg.norm(x))
 
-#         #noremd_mat_tfidf[i, j] = D_tfidf_norm
+#         #noremd_mat[i, j] = np.linalg.norm(x)
 
 
 ########################################################

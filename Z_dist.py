@@ -42,7 +42,6 @@ for city in tweets_dict:
     if len(tweets_dict[city]) > 5000:
         tweets_dict_top[city] = tweets_dict[city]
 
-tweets_dict = None
 
 min_state = min([len(tweets_dict_top[state])
                  for state in tweets_dict_top])
@@ -92,18 +91,18 @@ def get_delta(target, states_zscores, word_list):
     return deltas
 
 
-def get_average(deltas):
+# def get_average(deltas):
 
-    values = [value for value in deltas.values()]
-    average = sum(values) / len(values)
+#     values = [value for value in deltas.values()]
+#     average = sum(values) / len(values)
 
-    return average
+#     return average
 
 
 iter_results = []
 
 print("Begin sampling ############################")
-for i in range(iters):
+for i in range(2):
     print(i)
     start_time = time.time()
 
@@ -188,7 +187,7 @@ for i in range(iters):
     print("--- %s seconds ---" % (time.time() - start_time))
 
 
-save_iter_results = open("iter_results_Z_cities.pickle", "wb")
+save_iter_results = open("iter_results_Z_cities_iters_2.pickle", "wb")
 pickle.dump(iter_results, save_iter_results, -1)
 save_iter_results.close()
 
