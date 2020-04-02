@@ -63,7 +63,6 @@ class Langdistance:
             subsets_words[subset] = word_vec
 
         for index, subset in enumerate(subsets_words):
-
             if index == 0:
                 for word in subsets_words[subset]:
                     word_set.add(word)
@@ -72,6 +71,12 @@ class Langdistance:
                 for word in subsets_words[subset]:
                     set2.add(word)
                 word_set = word_set.intersection(set2)
+
+        for subset in subsets_words:
+            overall = sum(subsets_words[subset].values())
+            for word in subsets_words[subset]:
+                subsets_words[subset][word] /= overall
+
         return subsets_words, word_set
 
     def __save_results(self, iter_results, metric):
@@ -88,11 +93,8 @@ class Langdistance:
         for i in range(1, self.iters + 1):  # 1,self.iters+1):
             start_time = time.time()
             subsets_words, word_set = self.__sample(self.dataset)
+
             subsets_features = {}
-            for subset in subsets_words:
-                overall = sum(subsets_words[subset].values())
-                for word in subsets_words[subset]:
-                    subsets_words[subset][word] /= overall
 
             for word in list(word_set):
                 subsets_features[word] = {}
@@ -144,6 +146,6 @@ class Langdistance:
             print("Finished " + str(i) + "/" + str(self.iters) +
                   " iteration ")
             print("Time left about: ",
-                  time_elapsed * (self.iters - i), " sec.")
+                  int(time_elapsed * (self.iters - i)), " sec.")
 
         self.__save_results(iter_results, "burrows_delta")
