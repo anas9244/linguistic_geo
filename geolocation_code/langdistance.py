@@ -142,8 +142,8 @@ class Langdistance:
             time_elapsed = time.time() - start_time
 
             print("Finished " + str(i) + "/" + str(self.iters) +
-                  " iteration after " + "--- %s seconds ---" % time_elapsed)
-            print("Time remaining about: ",
-                  (time_elapsed * (self.iters - i)) - time_elapsed, )
+                  " iteration ")
+            print("Time left about: ",
+                  time_elapsed * (self.iters - i), " sec.")
 
         self.__save_results(iter_results, "burrows_delta")
