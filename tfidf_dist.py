@@ -25,8 +25,8 @@ tweets_dict_file.close()
 tweets_dict_top = {}
 
 for city in tweets_dict:
-  if len(tweets_dict[city]) > 2000:
-    tweets_dict_top[city] = tweets_dict[city]
+    if len(tweets_dict[city]) > 2000:
+        tweets_dict_top[city] = tweets_dict[city]
 
 
 tweets_dict = None
@@ -42,35 +42,32 @@ print(iters)
 
 iter_results = []
 
+
 for i in range(iters):
-  print(i)
-  start_time = time.time()
+    print(i)
+    start_time = time.time()
 
-  states_words = {}
-  states_features = {}
-  word_set = set()
+    corpus = []
+    for state in tweets_dict_top:
+        start_index = random.randint(
+            0, len(tweets_dict_top[state]) - min_state)
+        end_index = start_index + min_state
 
-  corpus = []
-  for state in tweets_dict_top:
-    start_index = random.randint(
-        0, len(tweets_dict_top[state]) - min_state)
-    end_index = start_index + min_state
+        sample = tweets_dict_top[state][start_index:end_index]
+        sub_corpus = ""
+        for tweet in sample:
+            sub_corpus += " " + tweet
+        corpus.append(sub_corpus)
 
-    sample = tweets_dict_top[state][start_index:end_index]
-    sub_corpus = ""
-    for tweet in sample:
-      sub_corpus += " " + tweet
-    corpus.append(sub_corpus)
+    vectorizer = TfidfVectorizer()
+    X = vectorizer.fit_transform(corpus)
 
-  vectorizer = TfidfVectorizer()
-  X = vectorizer.fit_transform(corpus)
+    tf_idf_dist = manhattan_distances(X)
+    print(tf_idf_dist.shape)
 
-  tf_idf_dist = manhattan_distances(X)
-  print(tf_idf_dist.shape)
+    iter_results.append(tf_idf_dist)
 
-  iter_results.append(tf_idf_dist)
-
-  print("--- %s seconds ---" % (time.time() - start_time))
+    print("--- %s seconds ---" % (time.time() - start_time))
 
 
 save_iter_results = open("iter_results_tfidf_cities_2000t.pickle", "wb")
@@ -82,17 +79,17 @@ def sendemail(from_addr, to_addr_list,
               subject, message,
               login, password,
               smtpserver='smtp.gmail.com:587'):
-  header = 'From: %s\n' % from_addr
-  header += 'To: %s\n' % ','.join(to_addr_list)
-  header += 'Subject: %s\n\n' % subject
-  message = header + message
+    header = 'From: %s\n' % from_addr
+    header += 'To: %s\n' % ','.join(to_addr_list)
+    header += 'Subject: %s\n\n' % subject
+    message = header + message
 
-  server = smtplib.SMTP(smtpserver)
-  server.starttls()
-  server.login(login, password)
-  problems = server.sendmail(from_addr, to_addr_list, message)
-  server.quit()
-  return problems
+    server = smtplib.SMTP(smtpserver)
+    server.starttls()
+    server.login(login, password)
+    problems = server.sendmail(from_addr, to_addr_list, message)
+    server.quit()
+    return problems
 
 
 sendemail(from_addr='anasnayef1@gmail.com',
