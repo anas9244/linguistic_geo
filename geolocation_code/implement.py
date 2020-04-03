@@ -1,7 +1,7 @@
 from langdistance import LangDistance
 import pickle
 
-tweets_dict_file = open("merged_states_tweets.pickle", "rb")
+tweets_dict_file = open("city_tweets_dict.pickle", "rb")
 tweets_dict = pickle.load(tweets_dict_file)
 tweets_dict_file.close()
 print(len(tweets_dict))

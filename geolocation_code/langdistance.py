@@ -8,6 +8,8 @@ from scipy.spatial import distance
 from sklearn.metrics.pairwise import manhattan_distances
 from sklearn.feature_extraction.text import TfidfVectorizer
 
+import shutil
+
 
 class LangDistance:
     def __init__(self, dataset):
@@ -56,11 +58,12 @@ class LangDistance:
         print("Largest subset: ", self.max_subset, " tweets")
         print("Num. of iterations: ", self.iters)
 
-        os.mkdir('resampling')
+        if not os.path.exists('resampling'):
+            os.makedirs('resampling')
 
         start_time = time.time()
 
-        for i in range(1, 2):
+        for i in range(1, 5):
             iter_sample = []
 
             subsets_words = {}
@@ -102,7 +105,7 @@ class LangDistance:
 
             iter_sample.append(subsets_words)
             iter_sample.append(word_set)
-            iter_sample.append(corpus)
+            # iter_sample.append(corpus)
 
             time_elapsed = time.time() - start_time
             print("Finished " + str(i) + "/" + str(self.iters) +
@@ -113,7 +116,7 @@ class LangDistance:
             print("")
 
             save_resampling_iter = open(
-                "resampling/iter_" + i + ".pickle", "wb")
+                "resampling/iter_" + str(i) + ".pickle", "wb")
             pickle.dump(iter_sample, save_resampling_iter, -1)
 
         # if metric != "tfidf":
@@ -122,15 +125,20 @@ class LangDistance:
         #     return sample
 
     def __save_results(self, iter_results, metric):
-        os.mkdir('dist_mats')
+
+        if not os.path.exists('dist_mats'):
+            os.mkdir('dist_mats')
+
         avr_mat = sum(iter_results) / len(iter_results)
 
-        save_avr_result = open("dist_mats/"+metric + "_dist_mat.pickle", "wb")
+        save_avr_result = open("dist_mats/" + metric +
+                               "_dist_mat.pickle", "wb")
         pickle.dump(avr_mat, save_avr_result, -1)
         save_avr_result.close()
 
-        file_patth = os.path.abspath("dist_mats/"+metric + "_dist_mat.pickle")
-        print(metric + " distance matrix stored in ", file_patth)
+        file_path = os.path.abspath(
+            "dist_mats/" + metric + "_dist_mat.pickle")
+        print(metric + " distance matrix stored in ", file_path)
 
     def Burrows_delta(self):
         iter_results = []
@@ -249,21 +257,3 @@ class LangDistance:
 
     def TF_IDF(self):
         pass
-
-        for i in range(1, self.iters + 1):
-            corpus = []
-            for subset in self.dataset:
-
-                sample = self.__sample(self.dataset, "tfidf")
-                sub_corpus = ""
-                for tweet in sample:
-                    sub_corpus += " " + tweet
-                corpus.append(sub_corpus)
-
-            vectorizer = TfidfVectorizer()
-            X = vectorizer.fit_transform(corpus)
-
-            tf_idf_dist = manhattan_distances(X)
-            print(tf_idf_dist.shape)
-
-            iter_results.append(tf_idf_dist)
