@@ -11,6 +11,26 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 import shutil
 
 
+def prepend(list, str):
+
+    # Using format()
+    str += '{0}'
+    list = [str.format(i) for i in list]
+    return(list)
+
+
+def get_files(dirr):
+
+    fileDir = os.path.dirname(os.path.abspath(__file__))
+    path_dir = fileDir + "/" + dirr + "/"
+    files = os.listdir(path=path_dir)
+    files_paths = prepend(files, path_dir)
+
+    files_paths.sort(key=os.path.getmtime)
+
+    return(files_paths)
+
+
 class LangDistance:
     def __init__(self, dataset):
 
@@ -68,7 +88,7 @@ class LangDistance:
 
             subsets_words = {}
             word_set = set()
-            corpus = []
+
             for subset in self.dataset:
 
                 start_index = random.randint(
@@ -78,11 +98,6 @@ class LangDistance:
 
                 word_vec = self.__get_word_vec(sample)
                 subsets_words[subset] = word_vec
-
-                sub_corpus = ""
-                for tweet in sample:
-                    sub_corpus += " " + tweet
-                corpus.append(sub_corpus)
 
             for index, subset in enumerate(subsets_words):
                 if index == 0:
@@ -94,10 +109,10 @@ class LangDistance:
                         set2.add(word)
                     word_set = word_set.intersection(set2)
 
-            for subset in subsets_words:
-                overall = sum(subsets_words[subset].values())
-                for word in subsets_words[subset]:
-                    subsets_words[subset][word] /= overall
+            # for subset in subsets_words:
+            #     overall = sum(subsets_words[subset].values())
+            #     for word in subsets_words[subset]:
+            #         subsets_words[subset][word] /= overall
             if i == 1:
                 print("Estimated word-types per iteration: ",
                       round(len(word_set), -(len(str(len(word_set))) - 1)))
@@ -105,7 +120,6 @@ class LangDistance:
 
             iter_sample.append(subsets_words)
             iter_sample.append(word_set)
-            # iter_sample.append(corpus)
 
             time_elapsed = time.time() - start_time
             print("Finished " + str(i) + "/" + str(self.iters) +
@@ -140,120 +154,138 @@ class LangDistance:
             "dist_mats/" + metric + "_dist_mat.pickle")
         print(metric + " distance matrix stored in ", file_path)
 
+    def __getResamplData(self, pickle_file):
+        resample_file = open(pickle_file, "rb")
+        resample_data = pickle.load(resample_file)
+        resample_file.close()
+
+        return resample_data[0], resample_data[1]
+
     def Burrows_delta(self):
         iter_results = []
+        if len(os.listdir('resampling')) == 0 or not os.path.exists('resampling'):
+            print("No resampling data found! Please run resample() first.")
+        else:
 
-        print("Starting burrows-delta with random resampling....")
-        print("Number of subsets: ", len(self.dataset))
-        print("Smallest subset: ", self.min_subset, " tweets")
-        print("Largest subset: ", self.max_subset, " tweets")
-        print("Num. of iterations: ", self.iters)
+            for file in get_files('resampling'):
+                print(file)
+                subsets_words, word_set = self.__getResamplData(file)
+                #subsets_words, word_set = self.__sample(self.dataset, "Z")
+                subsets_features = {}
+                for word in list(word_set):
+                    subsets_features[word] = {}
+                    word_mean = 0
+                    for subset in subsets_words:
 
-        for i in range(1, self.iters + 1):  # 1,self.iters+1):
+                        word_mean += subsets_words[subset][word]
 
-            start_time = time.time()
-            subsets_words, word_set = self.__sample(self.dataset, "Z")
-            if i == 1:
-                print("Estimated word-types per iteration: ",
-                      round(len(word_set), -(len(str(len(word_set))) - 1)))
-                print("")
-            subsets_features = {}
-            for word in list(word_set):
-                subsets_features[word] = {}
-                word_mean = 0
+                    word_mean /= len(subsets_words)
+                    subsets_features[word]["mean"] = word_mean
+
+                    word_stdev = 0
+                    for subset in subsets_words:
+
+                        diff = subsets_words[subset][word] - \
+                            subsets_features[word]["mean"]
+
+                        word_stdev += diff * diff
+
+                    word_stdev /= (len(subsets_words) - 1)
+                    word_stdev = math.sqrt(word_stdev)
+                    subsets_features[word]["stdev"] = word_stdev
+
+                subsets_zscores = {}
                 for subset in subsets_words:
+                    subsets_zscores[subset] = {}
 
-                    word_mean += subsets_words[subset][word]
+                    for word in list(word_set)[:]:
+                        if word in subsets_words[subset]:
+                            word_subset_freq = subsets_words[subset][word]
+                            word_mean = subsets_features[word]["mean"]
+                            word_stdev = subsets_features[word]["stdev"]
+                            subsets_zscores[subset][word] = (
+                                word_subset_freq - word_mean) / word_stdev
 
-                word_mean /= len(subsets_words)
-                subsets_features[word]["mean"] = word_mean
+                result_mat = np.zeros(
+                    (len(subsets_zscores), len(subsets_zscores)))
 
-                word_stdev = 0
-                for subset in subsets_words:
+                for index, subset in enumerate(subsets_zscores):
+                    delats = self.__get_delta(
+                        subset, subsets_zscores, list(word_set))
+                    values = [value for value in delats.values()]
+                    result_mat[index] = values
 
-                    diff = subsets_words[subset][word] - \
-                        subsets_features[word]["mean"]
+                iter_results.append(result_mat)
 
-                    word_stdev += diff * diff
-
-                word_stdev /= (len(subsets_words) - 1)
-                word_stdev = math.sqrt(word_stdev)
-                subsets_features[word]["stdev"] = word_stdev
-
-            subsets_zscores = {}
-            for subset in subsets_words:
-                subsets_zscores[subset] = {}
-
-                for word in list(word_set)[:]:
-                    if word in subsets_words[subset]:
-                        word_subset_freq = subsets_words[subset][word]
-                        word_mean = subsets_features[word]["mean"]
-                        word_stdev = subsets_features[word]["stdev"]
-                        subsets_zscores[subset][word] = (
-                            word_subset_freq - word_mean) / word_stdev
-
-            result_mat = np.zeros((len(subsets_zscores), len(subsets_zscores)))
-
-            for index, subset in enumerate(subsets_zscores):
-                delats = self.__get_delta(
-                    subset, subsets_zscores, list(word_set))
-                values = [value for value in delats.values()]
-                result_mat[index] = values
-
-            iter_results.append(result_mat)
-
-            time_elapsed = time.time() - start_time
-            print("Finished " + str(i) + "/" + str(self.iters) +
-                  " iteration ")
-            print("Estimated time left: ",
-                  int(time_elapsed * (self.iters - i)), " sec.")
-
-            print("")
-
-        self.__save_results(iter_results, "burrows_delta")
+            self.__save_results(iter_results, "burrows_delta")
 
     def JSD(self):
         iter_results = []
-        print("Starting JSD with random resampling....")
-        print("Number of subsets: ", len(self.dataset))
-        print("Smallest subset: ", self.min_subset, " tweets")
-        print("Largest subset: ", self.max_subset, " tweets")
-        print("Num. of iterations: ", self.iters)
+        if len(os.listdir('resampling')) == 0 or not os.path.exists('resampling'):
+            print("No resampling data found! Please run resample() first.")
+        else:
 
-        for i in range(1, self.iters + 1):
-            start_time = time.time()
+            for i in range(1, self.iters + 1):
+                start_time = time.time()
 
-            subsets_words, word_set = self.__sample(self.dataset, "jsd")
-            if i == 1:
-                print("Estimated word-types per iteration: ",
-                      round(len(word_set), -(len(str(len(word_set))) - 1)))
+                subsets_words, word_set = self.__sample(self.dataset, "jsd")
+                if i == 1:
+                    print("Estimated word-types per iteration: ",
+                          round(len(word_set), -(len(str(len(word_set))) - 1)))
+                    print("")
+                subset_dist = {subset: [] for subset in subsets_words}
+                for word in word_set:
+                    for subset in subsets_words:
+                        subset_dist[subset].append(subsets_words[subset][word])
+
+                result_mat = np.zeros((len(subsets_words), len(subsets_words)))
+
+                for index, state in enumerate(subset_dist):
+                    subset_jsds = []
+
+                    for other_subset in subset_dist:
+
+                        subset_jsds.append(distance.jensenshannon(
+                            subset_dist[subset], subset_dist[other_subset], 2.0))
+
+                    result_mat[index] = subset_jsds
+
+                iter_results.append(result_mat)
+
+                time_elapsed = time.time() - start_time
+                print("Finished " + str(i) + "/" + str(self.iters) +
+                      " iteration ")
+                print("Estimated time left: ",
+                      int(time_elapsed * (self.iters - i)), " sec.")
                 print("")
-            subset_dist = {subset: [] for subset in subsets_words}
-            for word in word_set:
-                for subset in subsets_words:
-                    subset_dist[subset].append(subsets_words[subset][word])
-
-            result_mat = np.zeros((len(subsets_words), len(subsets_words)))
-
-            for index, state in enumerate(subset_dist):
-                subset_jsds = []
-
-                for other_subset in subset_dist:
-
-                    subset_jsds.append(distance.jensenshannon(
-                        subset_dist[subset], subset_dist[other_subset], 2.0))
-
-                result_mat[index] = subset_jsds
-
-            iter_results.append(result_mat)
-
-            time_elapsed = time.time() - start_time
-            print("Finished " + str(i) + "/" + str(self.iters) +
-                  " iteration ")
-            print("Estimated time left: ",
-                  int(time_elapsed * (self.iters - i)), " sec.")
-            print("")
-        self.__save_results(iter_results, "JSD")
+            self.__save_results(iter_results, "JSD")
 
     def TF_IDF(self):
         pass
+
+
+# word_vec = {}
+# test = ['Anas alnayef Anas is is very good guy', 'Anas is not so guy good guy']
+# print(test)
+# for state in test:
+#     for word in state.split():
+#         if word not in word_vec:
+#             word_vec[word] = 1
+#         else:
+#             word_vec[word] += 1
+
+# print(word_vec)
+
+
+# test_out = " ".join([(word + ' ') * word_vec[word] for word in word_vec])
+
+# print(test_out)
+# word_vec = {}
+# # for state in test_out:
+# for word in test_out.split():
+#     if word not in word_vec:
+#         word_vec[word] = 1
+#     else:
+#         word_vec[word] += 1
+
+# print(word_vec)
