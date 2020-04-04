@@ -90,9 +90,12 @@ def show_mat(gran, geo=False):
         noremd_mat_file.close()
 
     else:
-
-        noremd_mat_file = open("noremd_mat_" + gran + ".pickle", "rb")
+        # noremd_mat_file = open(
+           # "geolocation_code/dist_mats/tfidf_dist_mat.pickle", "rb")
+        noremd_mat_file = open('iter_results_tfidf_states02.pickle', "rb")
+        #noremd_mat_file = open("noremd_mat_" + gran + ".pickle", "rb")
         noremd_mat = pickle.load(noremd_mat_file)
+        noremd_mat = sum(noremd_mat) / len(noremd_mat)
         noremd_mat_file.close()
 
     fig = plt.figure()
@@ -116,7 +119,7 @@ def show_mat(gran, geo=False):
     plt.show()
 
 
-show_mat('cities', False)
+show_mat('states', False)
 #>5000 : wordset 717, 63 iters, max: 317697
 
 

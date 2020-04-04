@@ -31,48 +31,73 @@ def get_files(dirr):
     return(files_paths)
 
 
+def get_delta(target, subsets_zscores, word_list):
+    deltas = {}
+    for subset in subsets_zscores:
+        delta = 0
+        for word in word_list:
+            try:
+                delta += math.fabs((subsets_zscores[target]
+                                    [word] - subsets_zscores[subset][word]))
+            except:
+                pass
+                # print(subset, word)
+        # print(len(word_list))
+        delta /= len(word_list)
+        deltas[subset] = delta
+
+    return deltas
+
+
+def getResamplData(pickle_file):
+    resample_file = open(pickle_file, "rb")
+    resample_data = pickle.load(resample_file)
+    resample_file.close()
+
+    return resample_data[0], resample_data[1]
+
+
+def get_word_vec(sample):
+    word_vec = {}
+    for tweet in sample:
+        for word in tweet.split():
+            if word not in word_vec:
+                word_vec[word] = 1
+            else:
+                word_vec[word] += 1
+    return word_vec
+
+
+def save_results(iter_results, metric):
+
+    if not os.path.exists('dist_mats'):
+        os.mkdir('dist_mats')
+
+    avr_mat = sum(iter_results) / len(iter_results)
+
+    save_avr_result = open("dist_mats/" + metric +
+                           "_dist_mat.pickle", "wb")
+    pickle.dump(avr_mat, save_avr_result, -1)
+    save_avr_result.close()
+
+    file_path = os.path.abspath(
+        "dist_mats/" + metric + "_dist_mat.pickle")
+    print(metric + " distance matrix stored in ", file_path)
+
+
 class LangDistance:
     def __init__(self, dataset):
 
         self.dataset = dataset
-
         self.min_subset = min([len(self.dataset[subset])
                                for subset in self.dataset])
         self.max_subset = max([len(self.dataset[subset])
                                for subset in self.dataset])
-
         self.iters = int(round(self.max_subset / self.min_subset, 0))
 
-    def __get_word_vec(self, sample):
-        word_vec = {}
-        for tweet in sample:
-            for word in tweet.split():
-                if word not in word_vec:
-                    word_vec[word] = 1
-                else:
-                    word_vec[word] += 1
-        return word_vec
+    def Resample(self):
 
-    def __get_delta(self, target, subsets_zscores, word_list):
-        deltas = {}
-        for subset in subsets_zscores:
-            delta = 0
-            for word in word_list:
-                try:
-                    delta += math.fabs((subsets_zscores[target]
-                                        [word] - subsets_zscores[subset][word]))
-                except:
-                    pass
-                    # print(subset, word)
-            # print(len(word_list))
-            delta /= len(word_list)
-            deltas[subset] = delta
-
-        return deltas
-
-    def resample(self):
-
-        print("Starting random resampling....")
+        print("Creating random-resampling data....")
         print("Number of subsets: ", len(self.dataset))
         print("Smallest subset: ", self.min_subset, " tweets")
         print("Largest subset: ", self.max_subset, " tweets")
@@ -81,11 +106,10 @@ class LangDistance:
         if not os.path.exists('resampling'):
             os.makedirs('resampling')
 
-        start_time = time.time()
+        for i in range(1, self.iters + 1):
+            start_time = time.time()
 
-        for i in range(1, 5):
             iter_sample = []
-
             subsets_words = {}
             word_set = set()
 
@@ -96,7 +120,7 @@ class LangDistance:
                 end_index = start_index + self.min_subset
                 sample = self.dataset[subset][start_index:end_index]
 
-                word_vec = self.__get_word_vec(sample)
+                word_vec = get_word_vec(sample)
                 subsets_words[subset] = word_vec
 
             for index, subset in enumerate(subsets_words):
@@ -109,10 +133,6 @@ class LangDistance:
                         set2.add(word)
                     word_set = word_set.intersection(set2)
 
-            # for subset in subsets_words:
-            #     overall = sum(subsets_words[subset].values())
-            #     for word in subsets_words[subset]:
-            #         subsets_words[subset][word] /= overall
             if i == 1:
                 print("Estimated word-types per iteration: ",
                       round(len(word_set), -(len(str(len(word_set))) - 1)))
@@ -133,44 +153,29 @@ class LangDistance:
                 "resampling/iter_" + str(i) + ".pickle", "wb")
             pickle.dump(iter_sample, save_resampling_iter, -1)
 
-        # if metric != "tfidf":
-        #     return subsets_words, word_set
-        # else:
-        #     return sample
-
-    def __save_results(self, iter_results, metric):
-
-        if not os.path.exists('dist_mats'):
-            os.mkdir('dist_mats')
-
-        avr_mat = sum(iter_results) / len(iter_results)
-
-        save_avr_result = open("dist_mats/" + metric +
-                               "_dist_mat.pickle", "wb")
-        pickle.dump(avr_mat, save_avr_result, -1)
-        save_avr_result.close()
-
-        file_path = os.path.abspath(
-            "dist_mats/" + metric + "_dist_mat.pickle")
-        print(metric + " distance matrix stored in ", file_path)
-
-    def __getResamplData(self, pickle_file):
-        resample_file = open(pickle_file, "rb")
-        resample_data = pickle.load(resample_file)
-        resample_file.close()
-
-        return resample_data[0], resample_data[1]
-
     def Burrows_delta(self):
-        iter_results = []
-        if len(os.listdir('resampling')) == 0 or not os.path.exists('resampling'):
-            print("No resampling data found! Please run resample() first.")
-        else:
 
-            for file in get_files('resampling'):
-                print(file)
-                subsets_words, word_set = self.__getResamplData(file)
-                #subsets_words, word_set = self.__sample(self.dataset, "Z")
+        if not os.path.exists('resampling'):
+            print("No resampling data found! Please run Resample() first.")
+        elif len(os.listdir('resampling')) == 0:
+            print("No resampling data found! Please run Resample() first.")
+        else:
+            iter_results = []
+            for res_index, file in enumerate(get_files('resampling')):
+                start_time = time.time()
+                if res_index > 5:
+                    break
+                subsets_words, word_set = getResamplData(file)
+
+                if res_index == 0:
+                    print("Estimated word-types per iteration: ",
+                          round(len(word_set), -(len(str(len(word_set))) - 1)))
+                    print("")
+                for subset in subsets_words:
+                    overall = sum(subsets_words[subset].values())
+                    for word in subsets_words[subset]:
+                        subsets_words[subset][word] /= overall
+
                 subsets_features = {}
                 for word in list(word_set):
                     subsets_features[word] = {}
@@ -210,82 +215,99 @@ class LangDistance:
                     (len(subsets_zscores), len(subsets_zscores)))
 
                 for index, subset in enumerate(subsets_zscores):
-                    delats = self.__get_delta(
+                    delats = get_delta(
                         subset, subsets_zscores, list(word_set))
                     values = [value for value in delats.values()]
                     result_mat[index] = values
 
                 iter_results.append(result_mat)
+                time_elapsed = time.time() - start_time
+                print("Finished " + str(res_index + 1) + "/" + str(len(get_files('resampling'))) +
+                      " iteration ")
+                print("Estimated time left: ",
+                      int(time_elapsed * (len(get_files('resampling')) - (res_index + 1))), " sec.")
+                print("")
 
-            self.__save_results(iter_results, "burrows_delta")
+            save_results(iter_results, "burrows_delta")
 
     def JSD(self):
-        iter_results = []
-        if len(os.listdir('resampling')) == 0 or not os.path.exists('resampling'):
-            print("No resampling data found! Please run resample() first.")
-        else:
 
-            for i in range(1, self.iters + 1):
+        if not os.path.exists('resampling'):
+            print("No resampling data found! Please run Resample() first.")
+        elif len(os.listdir('resampling')) == 0:
+            print("No resampling data found! Please run Resample() first.")
+        else:
+            iter_results = []
+            for res_index, file in enumerate(get_files('resampling')):
                 start_time = time.time()
 
-                subsets_words, word_set = self.__sample(self.dataset, "jsd")
-                if i == 1:
+                subsets_words, word_set = getResamplData(file)
+
+                if res_index == 0:
                     print("Estimated word-types per iteration: ",
                           round(len(word_set), -(len(str(len(word_set))) - 1)))
                     print("")
+
+                for subset in subsets_words:
+                    overall = sum(subsets_words[subset].values())
+                    for word in subsets_words[subset]:
+                        subsets_words[subset][word] /= overall
+
                 subset_dist = {subset: [] for subset in subsets_words}
+
                 for word in word_set:
                     for subset in subsets_words:
                         subset_dist[subset].append(subsets_words[subset][word])
 
                 result_mat = np.zeros((len(subsets_words), len(subsets_words)))
 
-                for index, state in enumerate(subset_dist):
+                for index, subset in enumerate(subset_dist):
                     subset_jsds = []
-
                     for other_subset in subset_dist:
-
                         subset_jsds.append(distance.jensenshannon(
                             subset_dist[subset], subset_dist[other_subset], 2.0))
-
                     result_mat[index] = subset_jsds
 
                 iter_results.append(result_mat)
 
                 time_elapsed = time.time() - start_time
-                print("Finished " + str(i) + "/" + str(self.iters) +
+                print("Finished " + str(res_index + 1) + "/" + str(len(get_files('resampling'))) +
                       " iteration ")
                 print("Estimated time left: ",
-                      int(time_elapsed * (self.iters - i)), " sec.")
+                      int(time_elapsed * (len(get_files('resampling')) - (res_index + 1))), " sec.")
                 print("")
-            self.__save_results(iter_results, "JSD")
+            save_results(iter_results, "JSD")
 
     def TF_IDF(self):
-        pass
 
+        if not os.path.exists('resampling'):
+            print("No resampling data found! Please run Resample() first.")
+        elif len(os.listdir('resampling')) == 0:
+            print("No resampling data found! Please run Resample() first.")
+        else:
+            iter_results = []
+            for res_index, file in enumerate(get_files('resampling')):
+                start_time = time.time()
 
-# word_vec = {}
-# test = ['Anas alnayef Anas is is very good guy', 'Anas is not so guy good guy']
-# print(test)
-# for state in test:
-#     for word in state.split():
-#         if word not in word_vec:
-#             word_vec[word] = 1
-#         else:
-#             word_vec[word] += 1
+                subsets_words, word_set = getResamplData(file)
 
-# print(word_vec)
+                corpus = []
+                for subset in subsets_words:
+                    sub_corpus = " ".join(
+                        [(word + ' ') * subsets_words[subset][word] for word in subsets_words[subset]])
+                    corpus.append(sub_corpus)
 
+                vectorizer = TfidfVectorizer()
+                X = vectorizer.fit_transform(corpus)
 
-# test_out = " ".join([(word + ' ') * word_vec[word] for word in word_vec])
+                tf_idf_dist = manhattan_distances(X)
 
-# print(test_out)
-# word_vec = {}
-# # for state in test_out:
-# for word in test_out.split():
-#     if word not in word_vec:
-#         word_vec[word] = 1
-#     else:
-#         word_vec[word] += 1
+                iter_results.append(tf_idf_dist)
 
-# print(word_vec)
+                time_elapsed = time.time() - start_time
+                print("Finished " + str(res_index + 1) + "/" + str(len(get_files('resampling'))) +
+                      " iteration ")
+                print("Estimated time left: ",
+                      int(time_elapsed * (len(get_files('resampling')) - (res_index + 1))), " sec.")
+                print("")
+            save_results(iter_results, "tfidf")

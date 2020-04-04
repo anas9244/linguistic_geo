@@ -18,14 +18,14 @@ import random
 import smtplib
 
 
-tweets_dict_file = open("city_tweets_dict.pickle", "rb")
+tweets_dict_file = open("normed_tweets.pickle", "rb")
 tweets_dict = pickle.load(tweets_dict_file)
 tweets_dict_file.close()
 
 tweets_dict_top = {}
 
 for city in tweets_dict:
-    if len(tweets_dict[city]) > 2000:
+    if len(tweets_dict[city]) > 5000:
         tweets_dict_top[city] = tweets_dict[city]
 
 
@@ -45,6 +45,8 @@ iter_results = []
 
 for i in range(iters):
     print(i)
+   # if i > 20:
+      #  break
     start_time = time.time()
 
     corpus = []
@@ -70,7 +72,7 @@ for i in range(iters):
     print("--- %s seconds ---" % (time.time() - start_time))
 
 
-save_iter_results = open("iter_results_tfidf_cities_2000t.pickle", "wb")
+save_iter_results = open("iter_results_tfidf_states02.pickle", "wb")
 pickle.dump(iter_results, save_iter_results, -1)
 save_iter_results.close()
 
@@ -98,3 +100,4 @@ sendemail(from_addr='anasnayef1@gmail.com',
           message='tfidf_dist done',
           login='anasnayef1@gmail.com',
           password='Yeje_9244')
+#
