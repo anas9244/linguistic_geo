@@ -160,11 +160,11 @@ class LangDistance:
         elif len(os.listdir('resampling')) == 0:
             print("No resampling data found! Please run Resample() first.")
         else:
+            print("Starting Burrows_delta...")
             iter_results = []
             for res_index, file in enumerate(get_files('resampling')):
                 start_time = time.time()
-                if res_index > 5:
-                    break
+
                 subsets_words, word_set = getResamplData(file)
 
                 if res_index == 0:
@@ -237,6 +237,7 @@ class LangDistance:
         elif len(os.listdir('resampling')) == 0:
             print("No resampling data found! Please run Resample() first.")
         else:
+            print("Starting JSD...")
             iter_results = []
             for res_index, file in enumerate(get_files('resampling')):
                 start_time = time.time()
@@ -285,6 +286,7 @@ class LangDistance:
         elif len(os.listdir('resampling')) == 0:
             print("No resampling data found! Please run Resample() first.")
         else:
+            print("Starting TF_IDF...")
             iter_results = []
             for res_index, file in enumerate(get_files('resampling')):
                 start_time = time.time()

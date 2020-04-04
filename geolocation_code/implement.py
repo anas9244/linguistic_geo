@@ -16,7 +16,7 @@ for city in tweets_dict:
 
 
 dist_lang = LangDistance(tweets_dict_top)
-dist_lang.Resample()
+#dist_lang.Resample()
 dist_lang.Burrows_delta()
 dist_lang.JSD()
 dist_lang.TF_IDF()
