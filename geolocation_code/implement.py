@@ -1,7 +1,7 @@
 from langdistance import LangDistance
 import pickle
 
-tweets_dict_file = open("city_tweets_dict.pickle", "rb")
+tweets_dict_file = open("normed_tweets.pickle", "rb")
 tweets_dict = pickle.load(tweets_dict_file)
 tweets_dict_file.close()
 print(len(tweets_dict))
@@ -18,8 +18,8 @@ for city in tweets_dict:
 dist_lang = LangDistance(tweets_dict_top)
 #dist_lang.Resample()
 dist_lang.Burrows_delta()
-dist_lang.JSD()
-dist_lang.TF_IDF()
+# dist_lang.JSD()
+# dist_lang.TF_IDF()
 
 
 ##(50, 583490)

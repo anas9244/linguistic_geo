@@ -54,7 +54,7 @@ def getResamplData(pickle_file):
     resample_data = pickle.load(resample_file)
     resample_file.close()
 
-    return resample_data[0], resample_data[1]
+    return resample_data[0]
 
 
 def get_word_vec(sample):
@@ -85,6 +85,20 @@ def save_results(iter_results, metric):
     print(metric + " distance matrix stored in ", file_path)
 
 
+def get_word_set(subsets_words):
+    word_set = set()
+    for index, subset in enumerate(subsets_words):
+        if index == 0:
+            for word in subsets_words[subset]:
+                word_set.add(word)
+        else:
+            set2 = set()
+            for word in subsets_words[subset]:
+                set2.add(word)
+            word_set = word_set.intersection(set2)
+    return word_set
+
+
 class LangDistance:
     def __init__(self, dataset):
 
@@ -111,7 +125,6 @@ class LangDistance:
 
             iter_sample = []
             subsets_words = {}
-            word_set = set()
 
             for subset in self.dataset:
 
@@ -123,23 +136,13 @@ class LangDistance:
                 word_vec = get_word_vec(sample)
                 subsets_words[subset] = word_vec
 
-            for index, subset in enumerate(subsets_words):
-                if index == 0:
-                    for word in subsets_words[subset]:
-                        word_set.add(word)
-                else:
-                    set2 = set()
-                    for word in subsets_words[subset]:
-                        set2.add(word)
-                    word_set = word_set.intersection(set2)
-
+            word_set = get_word_set(subsets_words)
             if i == 1:
                 print("Estimated word-types per iteration: ",
                       round(len(word_set), -(len(str(len(word_set))) - 1)))
                 print("")
 
             iter_sample.append(subsets_words)
-            iter_sample.append(word_set)
 
             time_elapsed = time.time() - start_time
             print("Finished " + str(i) + "/" + str(self.iters) +
@@ -165,7 +168,8 @@ class LangDistance:
             for res_index, file in enumerate(get_files('resampling')):
                 start_time = time.time()
 
-                subsets_words, word_set = getResamplData(file)
+                subsets_words = getResamplData(file)
+                word_set = get_word_set(subsets_words)
 
                 if res_index == 0:
                     print("Estimated word-types per iteration: ",
@@ -179,24 +183,21 @@ class LangDistance:
                 subsets_features = {}
                 for word in list(word_set):
                     subsets_features[word] = {}
+
                     word_mean = 0
                     for subset in subsets_words:
-
                         word_mean += subsets_words[subset][word]
-
                     word_mean /= len(subsets_words)
                     subsets_features[word]["mean"] = word_mean
 
                     word_stdev = 0
                     for subset in subsets_words:
-
                         diff = subsets_words[subset][word] - \
                             subsets_features[word]["mean"]
-
                         word_stdev += diff * diff
-
                     word_stdev /= (len(subsets_words) - 1)
                     word_stdev = math.sqrt(word_stdev)
+
                     subsets_features[word]["stdev"] = word_stdev
 
                 subsets_zscores = {}
@@ -242,7 +243,8 @@ class LangDistance:
             for res_index, file in enumerate(get_files('resampling')):
                 start_time = time.time()
 
-                subsets_words, word_set = getResamplData(file)
+                subsets_words = getResamplData(file)
+                word_set = get_word_set(subsets_words)
 
                 if res_index == 0:
                     print("Estimated word-types per iteration: ",
@@ -291,7 +293,7 @@ class LangDistance:
             for res_index, file in enumerate(get_files('resampling')):
                 start_time = time.time()
 
-                subsets_words, word_set = getResamplData(file)
+                subsets_words = getResamplData(file)
 
                 corpus = []
                 for subset in subsets_words:
@@ -301,7 +303,6 @@ class LangDistance:
 
                 vectorizer = TfidfVectorizer()
                 X = vectorizer.fit_transform(corpus)
-
                 tf_idf_dist = manhattan_distances(X)
 
                 iter_results.append(tf_idf_dist)
