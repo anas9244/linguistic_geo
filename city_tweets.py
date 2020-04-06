@@ -93,6 +93,12 @@ whitelist = [
     "web",
     "iPad"]
 
+whitelist_full = [
+    "<a href=\"http://twitter.com/download/iphone\" rel=\"nofollow\">Twitter for iPhone</a>",
+    "<a href=\"http://twitter.com/download/android\" rel=\"nofollow\">Twitter for Android</a>",
+    "<a href=\"http://twitter.com\" rel=\"nofollow\">Twitter Web Client</a>",
+    "<a href=\"http://twitter.com/#!/download/ipad\" rel=\"nofollow\">Twitter for iPad</a>"]
+
 
 def city_corpus():
     # fileDir = os.path.dirname(__file__)
@@ -114,7 +120,7 @@ def city_corpus():
 
             if tweet['place'] != None:
 
-                if tweet['source'] in whitelist and tweet['place']['place_type'] == 'city' and tweet['place']['country_code'] == 'US':
+                if (tweet['source'] in whitelist or tweet['source'] in whitelist_full) and tweet['place']['place_type'] == 'city' and tweet['place']['country_code'] == 'US':
 
                     city = tweet['place']['id']
                     # place_id = tweet['place']['full_name'].replace("/", "_")
