@@ -77,6 +77,19 @@ def translate(value, leftMin, leftMax):
 
 
 ########################################################
+def alpha_sort(lables, mat):
+    lables_sorted = sorted(lables)
+    sorted_ind = []
+    for label in lables_sorted:
+        sorted_ind .append(lables.index(label))
+
+    sorted_mat = np.zeros((len(mat), len(mat)))
+    for i in range(len(sorted_ind)):
+        for j in range(len(sorted_ind)):
+
+            sorted_mat[i][j] = mat[sorted_ind[i]][sorted_ind[j]]
+    return lables_sorted, sorted_mat
+
 
 def show_mat(gran, geo=False):
 
@@ -98,9 +111,10 @@ def show_mat(gran, geo=False):
         #noremd_mat = sum(noremd_mat) / len(noremd_mat)
         noremd_mat_file.close()
 
+    sorted_labels, sorted_mat = alpha_sort(names, noremd_mat)
     fig = plt.figure()
     ax = fig.add_subplot()
-    cax = ax.matshow(noremd_mat, cmap='jet')
+    cax = ax.matshow(sorted_mat, cmap='jet')
     fig.colorbar(cax)
     ticks = np.arange(0, len(names), 1)
     if geo:
@@ -112,8 +126,8 @@ def show_mat(gran, geo=False):
 
     ax.set_xticks(ticks,)
     ax.set_yticks(ticks)
-    ax.set_xticklabels(names, size=7)
-    ax.set_yticklabels(names, size=7)
+    ax.set_xticklabels(sorted_labels, size=7)
+    ax.set_yticklabels(sorted_labels, size=7)
     # plt.axis('off')
 
     plt.show()

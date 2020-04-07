@@ -38,6 +38,9 @@ whitelist_full = [
 raw_data_path = "/media/data/twitter_geolocation/tweets_clean/"
 ##########################
 
+if not os.path.exists('data'):
+    os.mkdir('data')
+
 
 ps = PorterStemmer()
 punc = set(string.punctuation)
@@ -122,12 +125,14 @@ def norm_text(tweet):
             text = tweet['text']
     else:
         text = tweet['Text']
-    normed_text = []
+    normed_tokens = []
     for t in text.split():
-        normed_text.append(norm(t))
-    normed_text = " ".join(normed_text)
-
-    return normed_text
+        normed_tokens.append(norm(t))
+    normed_text = " ".join(normed_tokens)
+    if normed_tokens > 4:
+        return normed_text
+    else:
+        return False
 
 
 def build_data(gran, minsubset, maxsubset):
@@ -152,7 +157,9 @@ def build_data(gran, minsubset, maxsubset):
                             if key not in dataset:
                                 dataset[key] = []
                             if len(dataset[key]) <= maxsubset:
-                                dataset[key].append(norm_text(tweet))
+                                clean_tweet = norm_text(tweet)
+                                if clean_tweet:
+                                    dataset[key].append(clean_tweet)
 
                     elif gran == "state":
 
@@ -173,7 +180,9 @@ def build_data(gran, minsubset, maxsubset):
                         if key not in dataset:
                             dataset[key] = []
                         if len(dataset[key]) <= maxsubset:
-                            dataset[key].append(norm_text(tweet))
+                            clean_tweet = norm_text(tweet)
+                            if clean_tweet:
+                                dataset[key].append(clean_tweet)
                         # else:
                         #     print(key + " has " + str(maxsubset) + " tweets")
 
@@ -189,13 +198,17 @@ def build_data(gran, minsubset, maxsubset):
 
     print("saving files....")
 
+    data_path = "data/" + gran
+    if not os.path.exists(data_path):
+        os.mkdir(data_path)
+
     save_city_tweets_dict = open(
-        "dataset_" + str(gran) + ".pickle", "wb")
+        data_path + "/dataset.pickle", "wb")
     pickle.dump(dataset, save_city_tweets_dict, -1)
 
     save_city_tweets_dict = open(
-        "lables_" + str(gran) + ".pickle", "wb")
+        data_path + "/lables.pickle", "wb")
     pickle.dump(labels, save_city_tweets_dict, -1)
 
 
-build_data("state", minsubset=5000, maxsubset=1000000)
+build_data(gran="states", minsubset=5000, maxsubset=2000000)
