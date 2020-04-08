@@ -1,83 +1,12 @@
-
 import matplotlib.pyplot as plt
 import pickle
-from operator import itemgetter
-import math
-
 import numpy as np
-import time
-# new_tweets_dict_file = open("normed_tweets.pickle", "rb")
-# new_tweets_dict = pickle.load(new_tweets_dict_file)
-# new_tweets_dict_file.close()
+import scipy.spatial as sp
+import scipy.cluster.hierarchy as hc
+from scipy.cluster.hierarchy import dendrogram
 
 
-def translate(value, leftMin, leftMax):
-    # Figure out how 'wide' each range is
-    leftSpan = leftMax - leftMin
-    rightSpan = 1 - 0
-
-    # Convert the left range into a 0-1 range (float)
-    valueScaled = float(value - leftMin) / float(leftSpan)
-
-    # Convert the 0-1 range into a value in the right range.
-    return 0 + (valueScaled * rightSpan)
-
-
-# names_states_file = open("names_states.pickle", "rb")
-# names = pickle.load(names_states_file)
-# names_states_file.close()
-
-
-# noremd_mat_file = open("noremd_mat_states.pickle", "rb")
-# noremd_mat = pickle.load(noremd_mat_file)
-# noremd_mat_file.close()
-
-
-# iter_results_file = open("iter_results_z_states.pickle", "rb")
-# iter_results_Z = pickle.load(iter_results_file)
-# iter_results_file.close()
-# D_Z = sum(iter_results_Z) / len(iter_results_Z)
-# print(len(iter_results_Z))
-
-# iter_results_file = open("iter_results_tfidf_states.pickle", "rb")
-# iter_results_tfidf = pickle.load(iter_results_file)
-# iter_results_file.close()
-# D_tfidf = sum(iter_results_tfidf) / len(iter_results_tfidf)
-# print(len(iter_results_tfidf))
-
-# iter_results_file = open("iter_results_jsd_states.pickle", "rb")
-# iter_results_jsd = pickle.load(iter_results_file)
-# iter_results_file.close()
-# D_jsd = sum(iter_results_jsd) / len(iter_results_jsd)
-# print(len(iter_results_jsd))
-
-
-# noremd_mat = np.zeros((len(D_jsd), len(D_jsd)))
-
-# D_jsd_max = D_jsd.max()
-# D_Z_max = D_Z.max()
-# D_tfidf_max = D_tfidf.max()
-
-# D_jsd_min = D_jsd.min()
-# D_Z_min = D_Z.min()
-# D_tfidf_min = D_tfidf.min()
-# for i in range(len(D_jsd)):
-#     for j in range(len(D_jsd)):
-
-#         D_Z_norm = translate(D_Z[i, j], D_Z_min, D_Z_max)
-#         D_tfidf_norm = translate(D_tfidf[i, j], D_tfidf_min, D_tfidf_max)
-#         D_jsd_norm = translate(D_jsd[i, j], D_jsd_min, D_jsd_max)
-
-#         print(D_Z_norm, D_tfidf_norm, D_jsd_norm)
-
-#         x = np.array([D_Z_norm, D_tfidf_norm, D_jsd_norm])
-#         print(np.linalg.norm(x))
-
-#         #noremd_mat[i, j] = np.linalg.norm(x)
-
-
-########################################################
-def alpha_sort(lables, mat):
+def _alpha_sort(lables, mat):
     lables_sorted = sorted(lables)
     sorted_ind = []
     for label in lables_sorted:
@@ -91,50 +20,97 @@ def alpha_sort(lables, mat):
     return lables_sorted, sorted_mat
 
 
-def show_mat(gran, geo=False):
+def _hrchy_sort(gran, sort_by, dist_mat, lables, method):
+    if sort_by == 'lang':
+        linkage = hc.linkage(sp.distance.squareform(dist_mat), method=method)
+    elif sort_by == 'geo':
+        geo_mat_file = open("data/" + gran + "/dist_mats/geo_mat.pickle", "rb")
+        geo_mat = pickle.load(geo_mat_file)
 
-    names_file = open("lables" + gran + ".pickle", "rb")
-    names = pickle.load(names_file)
-    names_file.close()
+        linkage = hc.linkage(sp.distance.squareform(geo_mat), method=method)
 
-    if geo:
-        noremd_mat_file = open("geo_mat_" + gran + ".pickle", "rb")
-        noremd_mat = pickle.load(noremd_mat_file)
-        noremd_mat_file.close()
+    dendo = dendrogram(linkage, labels=lables)
 
-    else:
-        noremd_mat_file = open(
-            "dist_mats/tfidf_dist_mat.pickle", "rb")
-        #noremd_mat_file = open('iter_results_z_states.pickle', "rb")
-        #noremd_mat_file = open("noremd_mat_" + gran + ".pickle", "rb")
-        noremd_mat = pickle.load(noremd_mat_file)
-        #noremd_mat = sum(noremd_mat) / len(noremd_mat)
-        noremd_mat_file.close()
+    leaves = dendo['leaves']
 
-    sorted_labels, sorted_mat = alpha_sort(names, noremd_mat)
+    sorted_lables = []
+    for i in leaves:
+        sorted_lables.append(lables[i])
+    sorted_mat = np.empty(dist_mat.shape)
+
+    for i in range(len(leaves)):
+        for j in range(len(leaves)):
+
+            sorted_mat[i][j] = dist_mat[leaves[i]][leaves[j]]
+    return sorted_lables, sorted_mat
+
+
+def _show_mat(gran, measure, mat, lables, sort, method):
+
     fig = plt.figure()
     ax = fig.add_subplot()
-    cax = ax.matshow(sorted_mat, cmap='jet')
+    cax = ax.matshow(mat, cmap='Reds')
     fig.colorbar(cax)
-    ticks = np.arange(0, len(names), 1)
-    if geo:
-        plt.title(gran + ", Geographic distance, " +
-                  "num of " + gran + ": " + str(len(names)))
-    else:
-        plt.title(gran + ", Language distance, " +
-                  "num of " + gran + ": " + str(len(names)))
+    ticks = np.arange(0, len(lables), 1)
 
     ax.set_xticks(ticks,)
     ax.set_yticks(ticks)
-    ax.set_xticklabels(sorted_labels, size=7)
-    ax.set_yticklabels(sorted_labels, size=7)
+
+    ax.set_xticklabels(lables, size=7, rotation=45)
+    ax.set_yticklabels(lables, size=7)
+    if sort == 'alpha':
+        sort_by = "alphabetical order. "
+    elif sort == 'lang':
+        sort_by = "language similarity, method = " + method
+    elif sort == 'geo':
+        sort_by = "geographic distance, method = " + method
+
+    if measure == 'norm':
+        plt.title(gran + " language distance based on combination of 3 features (z-scores, TF-IDF, JSD), sorted by " + sort_by +
+                  ". Num of " + gran + ": " + str(len(lables)))
+    else:
+        plt.title(gran + " language distance based on " + measure + ", sorted by " + sort_by +
+                  ". Num of " + gran + ": " + str(len(lables)))
+
     # plt.axis('off')
 
+    #plt.savefig('archive/jsd.png', dpi=500)
     plt.show()
 
 
-show_mat('state', False)
-#>5000 : wordset 717, 63 iters, max: 317697
+def plot_dist(gran, feature, sort, method='ward'):
+    valid = True
+    if gran not in {"states", "cities"}:
+        valid = False
+        print("'" + gran + "'" +
+              " is invalid. Possible values are ('states' , 'cities')")
+
+    if feature not in {'burrows_delta', 'jsd', 'tfidf', 'norm'}:
+        valid = False
+        print("'" + feature + "'" +
+              " is invalid. Possible values are ('burrows_delta','jsd','tfidf','norm')")
+    if sort not in {'alpha', 'geo', 'lang'}:
+        valid = False
+        print("'" + sort + "'" +
+              " is invalid. Possible values are ('alpha', 'geo','lang')")
+    if valid:
+        gran_path = "data/" + gran
+
+        labels_file = open("data/" + gran + "/labels.pickle", "rb")
+        labels = pickle.load(labels_file)
+
+        dist_mat_file = open(gran_path + "/dist_mats/" +
+                             feature + "_dist_mat.pickle", "rb")
+        dist_mat = pickle.load(dist_mat_file)
+
+        if sort == 'alpha':
+            sorted_labels, sorted_mat = _alpha_sort(labels, dist_mat)
+        else:
+            sorted_labels, sorted_mat = _hrchy_sort(
+                gran, sort, dist_mat, labels, method)
+
+        _show_mat(gran, feature, sorted_mat, sorted_labels, sort, method)
 
 
-# tfidf >2000: 159 iters,max :
+plot_dist(gran='states', feature='norm', sort='lang', method='ward')
+# tweets>5000 : wordset 717, 63 iters, max: 317697

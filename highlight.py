@@ -6,7 +6,7 @@ import seaborn as sns
 # sns.set(font="monospace")
 import scipy.spatial as sp
 import scipy.cluster.hierarchy as hc
-from scipy.cluster.hierarchy import ward, dendrogram
+from scipy.cluster.hierarchy import dendrogram
 import numpy as np
 
 import plotly.graph_objects as go
@@ -76,13 +76,13 @@ def show_plt(gran, method, geo_sort):
 
     highlight_mat = np.empty(noremd_mat.shape)
     #taget_names = ['OH', 'UT', 'IN', 'OK', 'KY', 'ND', 'WV']
-    taget_names = ['Lewisville, TX', 'Santa Clarita, CA',
-                   'Spokane, WA', 'Riverview, FL']
+    # taget_names = ['Lewisville, TX', 'Santa Clarita, CA',
+    #                'Spokane, WA', 'Riverview, FL']
 
-    target_ind = [i for i in range(len(cluster_names))
-                  if cluster_names[i] in taget_names]
+    # target_ind = [i for i in range(len(cluster_names))
+    #               if cluster_names[i] in taget_names]
 
-    print(len(target_ind))
+    # print(len(target_ind))
 
     for i in range(len(leaves)):
         for j in range(len(leaves)):

@@ -1,5 +1,5 @@
 import pickle
-from langdistance import Resample, Burrows_delta, JSD, TF_IDF
+from langdistance import Resample, Burrows_delta, JSD, TF_IDF, Norm_mat
 
 
 def get_dataset(gran):
@@ -10,8 +10,15 @@ def get_dataset(gran):
     return dataset
 
 
-dataset = get_dataset('states')
-Resample(dataset)
-Burrows_delta()
-JSD()
-TF_IDF()
+def create_mats(gran):
+
+    dataset = get_dataset(gran)
+    print(len(dataset))
+    Resample(gran, dataset)
+    # Burrows_delta(gran)
+    # JSD(gran)
+    # TF_IDF(gran)
+    # Norm_mat(gran)
+
+
+create_mats('states')
