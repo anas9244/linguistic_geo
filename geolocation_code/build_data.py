@@ -181,8 +181,6 @@ def build_data(gran, minsubset, maxsubset):
 
         for index, file in enumerate(_get_files()):
             print(file)
-            if index > 5:
-                break
 
             opened_file = open(file, 'r', encoding="utf-8")
             for line in opened_file:
@@ -204,6 +202,7 @@ def build_data(gran, minsubset, maxsubset):
                                 if len(dataset[key]) <= maxsubset:
                                     clean_tweet = _norm_text(tweet)
                                     if clean_tweet:
+
                                         dataset[key].append(clean_tweet)
 
                         elif gran == "states":
@@ -252,8 +251,12 @@ def build_data(gran, minsubset, maxsubset):
         print("saving files....")
 
         data_path = "data/" + gran
-        if not os.path.exists(data_path):
-            os.mkdir(data_path)
+        if not os.path.exists("data/" + gran):
+            os.mkdir("data/" + gran)
+
+        mat_path = data_path + "/dist_mats"
+        if not os.path.exists(mat_path):
+            os.mkdir(mat_path)
 
         geo_mat = _get_geo_mat(whitelist_coords)
 
@@ -261,17 +264,17 @@ def build_data(gran, minsubset, maxsubset):
             data_path + "/dist_mats/geo_mat.pickle", "wb")
         pickle.dump(geo_mat, save_geo_mat, -1)
 
-        # save_dataset = open(
-        #     data_path + "/dataset.pickle", "wb")
-        # pickle.dump(dataset, save_dataset, -1)
+        save_dataset = open(
+            data_path + "/dataset.pickle", "wb")
+        pickle.dump(dataset, save_dataset, -1)
 
-        # save_labels = open(
-        #     data_path + "/labels.pickle", "wb")
-        # pickle.dump(labels, save_labels, -1)
+        save_labels = open(
+            data_path + "/labels.pickle", "wb")
+        pickle.dump(labels, save_labels, -1)
 
     else:
         print("'" + gran + "'" +
               " is invalid. Possible values are ('states' , 'cities')")
 
 
-build_data(gran="states", minsubset=5000, maxsubset=2000000)
+build_data(gran="cities", minsubset=5000, maxsubset=2000000)

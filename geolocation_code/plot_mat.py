@@ -112,5 +112,5 @@ def plot_dist(gran, feature, sort, method='ward'):
         _show_mat(gran, feature, sorted_mat, sorted_labels, sort, method)
 
 
-plot_dist(gran='states', feature='norm', sort='lang', method='ward')
+plot_dist(gran='cities', feature='burrows_delta', sort='lang', method='ward')
 # tweets>5000 : wordset 717, 63 iters, max: 317697
