@@ -51,6 +51,7 @@ iters = int(round(max_state / min_state, 0))
 print(min_state)
 print(max_state)
 print(iters)
+print(len(tweets_dict_top))
 
 
 def get_word_vec(tweets_list):
@@ -102,7 +103,7 @@ def get_delta(target, states_zscores, word_list):
 iter_results = []
 
 print("Begin sampling ############################")
-for i in range(2):
+for i in range(iters):
     print(i)
     start_time = time.time()
 
@@ -204,26 +205,26 @@ save_iter_results.close()
 # save_word_set_iters.close()
 
 
-def sendemail(from_addr, to_addr_list,
-              subject, message,
-              login, password,
-              smtpserver='smtp.gmail.com:587'):
-    header = 'From: %s\n' % from_addr
-    header += 'To: %s\n' % ','.join(to_addr_list)
-    header += 'Subject: %s\n\n' % subject
-    message = header + message
+# def sendemail(from_addr, to_addr_list,
+#               subject, message,
+#               login, password,
+#               smtpserver='smtp.gmail.com:587'):
+#     header = 'From: %s\n' % from_addr
+#     header += 'To: %s\n' % ','.join(to_addr_list)
+#     header += 'Subject: %s\n\n' % subject
+#     message = header + message
 
-    server = smtplib.SMTP(smtpserver)
-    server.starttls()
-    server.login(login, password)
-    problems = server.sendmail(from_addr, to_addr_list, message)
-    server.quit()
-    return problems
+#     server = smtplib.SMTP(smtpserver)
+#     server.starttls()
+#     server.login(login, password)
+#     problems = server.sendmail(from_addr, to_addr_list, message)
+#     server.quit()
+#     return problems
 
 
-sendemail(from_addr='anasnayef1@gmail.com',
-          to_addr_list=['anas.alnayef@uni-weimar.de'],
-          subject='Z_dist done',
-          message='Z_dist done',
-          login='anasnayef1@gmail.com',
-          password='Yeje_9244')
+# sendemail(from_addr='anasnayef1@gmail.com',
+#           to_addr_list=['anas.alnayef@uni-weimar.de'],
+#           subject='Z_dist done',
+#           message='Z_dist done',
+#           login='anasnayef1@gmail.com',
+#           password='Yeje_9244')

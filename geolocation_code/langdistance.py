@@ -7,12 +7,10 @@ import time
 from scipy.spatial import distance
 from sklearn.metrics.pairwise import manhattan_distances
 from sklearn.feature_extraction.text import TfidfVectorizer
-
 import shutil
 
-## Helper functions ##
 
-
+#-- Helper functions --#
 def _prepend(list, str):
 
     # Using format()
@@ -33,20 +31,17 @@ def _get_files(dirr):
     return(files_paths)
 
 
-def _get_delta(target, subsets_zscores, word_list):
-    deltas = {}
+def _get_delta(index, subsets_zscores):
+    deltas = []
+    target = list(subsets_zscores.keys())[index]
     for subset in subsets_zscores:
         delta = 0
-        for word in word_list:
-            try:
-                delta += math.fabs((subsets_zscores[target]
-                                    [word] - subsets_zscores[subset][word]))
-            except:
-                pass
-                # print(subset, word)
-        # print(len(word_list))
-        delta /= len(word_list)
-        deltas[subset] = delta
+        for i in range(len(subsets_zscores[target])):
+            delta += math.fabs((subsets_zscores[target]
+                                [i] - subsets_zscores[subset][i]))
+
+        delta /= len(subsets_zscores[target])
+        deltas.append(delta)
 
     return deltas
 
@@ -110,11 +105,10 @@ def _translate(value, leftMin, leftMax):
     # Convert the 0-1 range into a value in the right range.
     return 0 + (valueScaled * rightSpan)
 
-## End of helper functions ##
-
+#-- End of helper functions --#
 ############################################################################################################
 
-## Main functions ##
+#-- Main functions --#
 
 
 def Resample(gran, dataset):
@@ -132,7 +126,10 @@ def Resample(gran, dataset):
         print("Largest subset: ", max_subset, " tweets")
         print("Num. of iterations: ", iters)
 
-        if not os.path.exists(resample_path):
+        if os.path.exists(resample_path):
+            shutil.rmtree(resample_path)
+            os.makedirs(resample_path)
+        else:
             os.makedirs(resample_path)
 
         for i in range(1, iters + 1):
@@ -192,11 +189,12 @@ def Burrows_delta(gran):
 
                 subsets_words = _getResamplData(file)
                 word_set = _get_word_set(subsets_words)
-                print(len(subsets_words))
+
                 if res_index == 0:
                     print("Estimated word-types per iteration: ",
                           round(len(word_set), -(len(str(len(word_set))) - 1)))
                     print("")
+
                 for subset in subsets_words:
                     overall = sum(subsets_words[subset].values())
                     for word in subsets_words[subset]:
@@ -224,23 +222,25 @@ def Burrows_delta(gran):
 
                 subsets_zscores = {}
                 for subset in subsets_words:
-                    subsets_zscores[subset] = {}
+                    subsets_zscores[subset] = []
+                    for word in list(word_set):
+                        word_subset_freq = subsets_words[subset][word]
+                        word_mean = subsets_features[word]["mean"]
+                        word_stdev = subsets_features[word]["stdev"]
 
-                    for word in list(word_set)[:]:
-                        if word in subsets_words[subset]:
-                            word_subset_freq = subsets_words[subset][word]
-                            word_mean = subsets_features[word]["mean"]
-                            word_stdev = subsets_features[word]["stdev"]
-                            subsets_zscores[subset][word] = (
-                                word_subset_freq - word_mean) / word_stdev
+                        subsets_zscores[subset].append((
+                            word_subset_freq - word_mean) / word_stdev)
+
                 result_mat = np.zeros(
                     (len(subsets_zscores), len(subsets_zscores)))
 
-                for index, subset in enumerate(subsets_zscores):
-                    delats = _get_delta(
-                        subset, subsets_zscores, list(word_set))
-                    values = [value for value in delats.values()]
-                    result_mat[index] = values
+                _get_delta_start_time = time.time()
+
+                for i in range(len(result_mat)):
+                    result_mat[i] = _get_delta(i, subsets_zscores)
+
+                print('_get_delta_time', time.time() -
+                      _get_delta_start_time)
 
                 iter_results.append(result_mat)
                 time_elapsed = time.time() - start_time

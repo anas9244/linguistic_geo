@@ -19,18 +19,27 @@ def get_dataset(gran):
         dataset = pickle.load(dataset_file)
         dataset_file.close()
 
+        print("Number of tweets: ", sum(
+            [len(dataset[subset]) for subset in dataset]))
+
         return dataset
 
 
+dist_path = "data/cities"
+stats_file = open(dist_path + "/stats.pickle", "rb")
+stats = pickle.load(stats_file)
+stats_file.close()
+
+
+print (len(stats))
 def create_mats(gran):
 
     dataset = get_dataset(gran)
-    print(len(dataset))
-    Resample(gran, dataset)
-    Burrows_delta(gran)
-    JSD(gran)
-    TF_IDF(gran)
-    Norm_mat(gran)
+    #Resample(gran, dataset)
+    # Burrows_delta(gran)
+    # JSD(gran)
+    # TF_IDF(gran)
+    # Norm_mat(gran)
 
 
 create_mats('cities')

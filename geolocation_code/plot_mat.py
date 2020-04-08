@@ -30,7 +30,7 @@ def _hrchy_sort(gran, sort_by, dist_mat, lables, method):
         linkage = hc.linkage(sp.distance.squareform(geo_mat), method=method)
 
     dendo = dendrogram(linkage, labels=lables)
-
+    plt.axis('off')
     leaves = dendo['leaves']
 
     sorted_lables = []
@@ -72,7 +72,7 @@ def _show_mat(gran, measure, mat, lables, sort, method):
         plt.title(gran + " language distance based on " + measure + ", sorted by " + sort_by +
                   ". Num of " + gran + ": " + str(len(lables)))
 
-    # plt.axis('off')
+    plt.axis('off')
 
     #plt.savefig('archive/jsd.png', dpi=500)
     plt.show()
