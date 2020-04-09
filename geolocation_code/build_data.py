@@ -169,6 +169,8 @@ def build_data(gran, minsubset, maxsubset):
 
     dataset = {}
     labels = []
+    city_ids = {}
+    whitelist_city_ids = []
     subset_coords = {}
     whitelist_coords = {}
     ids = {}
@@ -189,6 +191,7 @@ def build_data(gran, minsubset, maxsubset):
                                 if key not in subset_coords:
                                     coords = tweet['place']['bounding_box']['coordinates'][0]
                                     subset_coords[key] = _get_center(coords)
+                                    city_ids[key] = tweet['place']['id']
 
                                 if key not in dataset:
                                     dataset[key] = []
@@ -204,8 +207,7 @@ def build_data(gran, minsubset, maxsubset):
                             key = _extract_state(tweet)
                             if key not in subset_coords:
                                 coords = tweet['place']['bounding_box']['coordinates'][0]
-                                subset_coords[key] = _get_center(
-                                    coords)
+                                subset_coords[key] = _get_center(coords)
 
                             if key not in dataset:
                                 dataset[key] = []
@@ -229,11 +231,12 @@ def build_data(gran, minsubset, maxsubset):
         for b in blacklist:
             del dataset[b]
             #del subsets_twit_infos[b]
-            del ids[b]
 
         for subset in dataset:
             labels.append(subset)
             whitelist_coords[subset] = subset_coords[subset]
+            if gran == 'cities':
+                whitelist_city_ids.append(city_ids[subset])
 
         geo_mat = _get_geo_mat(whitelist_coords)
 
@@ -267,6 +270,11 @@ def build_data(gran, minsubset, maxsubset):
             data_path + "/tweet_ids.pickle", "wb")
         pickle.dump(whitelist_ids, save_tweet_ids, -1)
 
+        if gran == 'cities':
+            save_city_ids = open(
+                data_path + "/city_ids.pickle", "wb")
+            pickle.dump(whitelist_city_ids, save_city_ids, -1)
+
     else:
         print("'" + gran + "'" +
               " is invalid. Possible values are ('states' , 'cities')")
@@ -274,5 +282,6 @@ def build_data(gran, minsubset, maxsubset):
 
 # Accepted values for gran: 'states', 'cities'
 # Recommneded maxsubset for gran='states' to be >1000000 for better representation
+# Recommneded minsubset for gran='cities' to be >5000 since less will create very few common word types accros subsets
 if __name__ == "__main__":
-    build_data(gran="cities", minsubset=5000, maxsubset=200000)
+    build_data(gran="states", minsubset=5000, maxsubset=2000000)

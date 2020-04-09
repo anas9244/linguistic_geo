@@ -130,5 +130,5 @@ def plot_dist(gran, metric, sort, show_lables, method='ward',):
 if __name__ == "__main__":
     # Possible values for metric are ('burrows_delta', 'jsd', 'tfidf', 'norm')
     # Possible values for sort are ('alpha', 'geo', 'lang')
-    plot_dist(gran='cities', metric='norm',
-              sort='lang', show_lables=False, method='ward')
+    plot_dist(gran='states', metric='norm',
+              sort='alpha', show_lables=False, method='ward')

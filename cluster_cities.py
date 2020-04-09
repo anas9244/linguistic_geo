@@ -59,12 +59,13 @@ def clustering(n_clusters, method):
 
     # clustering = AgglomerativeClustering(
     #     n_clusters, affinity='precomputed', linkage=method).fit(dist_cities_mat)
-
+    #print(clustering)
     print(len(set(clustering)))
     for i in range(1, len(set(clustering)) + 1):
         print(i, list(clustering).count(i))
 
     x = np.arange(1, len(set(clustering)) + 1)
+    print(x)
     values = []
 
     for i in range(1, len(set(clustering)) + 1):

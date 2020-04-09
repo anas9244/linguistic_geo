@@ -65,8 +65,6 @@ def _get_word_vec(sample):
 
 def _save_results(gran, iter_results, metric):
     """ Saves a pickle file of distance matrix for given granularity and metric after averaging the samples results """
-    if not os.path.exists('dist_mats'):
-        os.mkdir('dist_mats')
 
     avr_mat = sum(iter_results) / len(iter_results)
     output_path = "data/" + gran + "/dist_mats/" + metric + "_dist_mat.pickle"
@@ -79,7 +77,7 @@ def _save_results(gran, iter_results, metric):
 
 
 def _get_word_set(subsets_words):
-    """ Generates a set of words that are common across all subsets """
+    """ Generates a set of word types that are common across all subsets """
     word_set = set()
     for index, subset in enumerate(subsets_words):
         if index == 0:
@@ -134,7 +132,7 @@ def Resample(gran, dataset):
         for i in range(1, iters + 1):
             start_time = time.time()
 
-            iter_sample = []
+            #iter_sample = []
             subsets_words = {}
 
             for subset in dataset:
@@ -153,7 +151,7 @@ def Resample(gran, dataset):
                       round(len(word_set), -(len(str(len(word_set))) - 1)))
                 print("")
 
-            iter_sample.append(subsets_words)
+            # iter_sample.append(subsets_words)
 
             time_elapsed = time.time() - start_time
             print("Finished " + str(i) + "/" + str(iters) + " iteration ")
@@ -163,7 +161,7 @@ def Resample(gran, dataset):
 
             save_resampling_iter = open(
                 "data/" + gran + "/resampling/iter_" + str(i) + ".pickle", "wb")
-            pickle.dump(iter_sample, save_resampling_iter, -1)
+            pickle.dump(subsets_words, save_resampling_iter, -1)
     else:
         print("'" + gran + "'" +
               " is invalid. Possible values are ('states' , 'cities')")
@@ -366,7 +364,6 @@ def Norm_mat(gran):
             "data/" + gran + "/dist_mats/tfidf_dist_mat.pickle", "rb")
         tfidf_mat = pickle.load(tfidf_mat_file)
 
-        print(type(z_mat))
         mat_size = len(z_mat)
         norm_mat = np.zeros((mat_size, mat_size))
 

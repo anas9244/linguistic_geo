@@ -36,4 +36,7 @@ def create_mats(gran):
 
 
 if __name__ == "__main__":
-    create_mats('cities')
+    create_mats('states')
+
+
+# 582 cities
