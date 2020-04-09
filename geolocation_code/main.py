@@ -3,7 +3,7 @@ from langdistance import Resample, Burrows_delta, JSD, TF_IDF, Norm_mat
 import os
 
 
-def get_dataset(gran):
+def _get_dataset(gran):
     dist_path = "data/" + gran
     if not os.path.exists(dist_path):
         print(
@@ -25,21 +25,15 @@ def get_dataset(gran):
         return dataset
 
 
-dist_path = "data/cities"
-stats_file = open(dist_path + "/stats.pickle", "rb")
-stats = pickle.load(stats_file)
-stats_file.close()
-
-
-print (len(stats))
 def create_mats(gran):
+    pass
+    dataset = _get_dataset(gran)
+    Resample(gran, dataset)
+    Burrows_delta(gran)
+    JSD(gran)
+    TF_IDF(gran)
+    Norm_mat(gran)
 
-    dataset = get_dataset(gran)
-    #Resample(gran, dataset)
-    # Burrows_delta(gran)
-    # JSD(gran)
-    # TF_IDF(gran)
-    # Norm_mat(gran)
 
-
-create_mats('cities')
+if __name__ == "__main__":
+    create_mats('cities')

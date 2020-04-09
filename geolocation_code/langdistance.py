@@ -11,27 +11,25 @@ import shutil
 
 
 #-- Helper functions --#
-def _prepend(list, str):
-
-    # Using format()
-    str += '{0}'
-    list = [str.format(i) for i in list]
-    return(list)
+def _prepend(files, dir_path):
+    """ Prepend the full directory path to files, so they can be used in open() """
+    dir_path += '{0}'
+    files = [dir_path.format(i) for i in files]
+    return(files)
 
 
 def _get_files(dirr):
-
+    """ Generates a list of files with full paths inside the given folder name """
     fileDir = os.path.dirname(os.path.abspath(__file__))
     path_dir = fileDir + "/" + dirr + "/"
     files = os.listdir(path=path_dir)
     files_paths = _prepend(files, path_dir)
-
     files_paths.sort(key=os.path.getmtime)
-
     return(files_paths)
 
 
 def _get_delta(index, subsets_zscores):
+    """ Generates a list of burrows_deltas for a subset with the rest of the subsets """
     deltas = []
     target = list(subsets_zscores.keys())[index]
     for subset in subsets_zscores:
@@ -39,22 +37,22 @@ def _get_delta(index, subsets_zscores):
         for i in range(len(subsets_zscores[target])):
             delta += math.fabs((subsets_zscores[target]
                                 [i] - subsets_zscores[subset][i]))
-
         delta /= len(subsets_zscores[target])
         deltas.append(delta)
-
     return deltas
 
 
 def _getResamplData(pickle_file):
+    """ Extracts sample of the dataset given a pickle file """
     resample_file = open(pickle_file, "rb")
     resample_data = pickle.load(resample_file)
     resample_file.close()
 
-    return resample_data[0]
+    return resample_data
 
 
 def _get_word_vec(sample):
+    """ Generates a directory of word occurrences for subsets in a given sample """
     word_vec = {}
     for tweet in sample:
         for word in tweet.split():
@@ -66,7 +64,7 @@ def _get_word_vec(sample):
 
 
 def _save_results(gran, iter_results, metric):
-
+    """ Saves a pickle file of distance matrix for given granularity and metric after averaging the samples results """
     if not os.path.exists('dist_mats'):
         os.mkdir('dist_mats')
 
@@ -81,6 +79,7 @@ def _save_results(gran, iter_results, metric):
 
 
 def _get_word_set(subsets_words):
+    """ Generates a set of words that are common across all subsets """
     word_set = set()
     for index, subset in enumerate(subsets_words):
         if index == 0:
@@ -95,6 +94,7 @@ def _get_word_set(subsets_words):
 
 
 def _translate(value, leftMin, leftMax):
+    """ Translates a value in a given range into 0-1 range """
     # Figure out how 'wide' each range is
     leftSpan = leftMax - leftMin
     rightSpan = 1 - 0
@@ -106,12 +106,11 @@ def _translate(value, leftMin, leftMax):
     return 0 + (valueScaled * rightSpan)
 
 #-- End of helper functions --#
-############################################################################################################
+
 
 #-- Main functions --#
-
-
 def Resample(gran, dataset):
+    """ Generates samples given granularity and dataset. A pickle for each iteration """
     if gran in {"states", "cities"}:
         resample_path = "data/" + gran + "/resampling"
         min_subset = min([len(dataset[subset])
@@ -157,15 +156,13 @@ def Resample(gran, dataset):
             iter_sample.append(subsets_words)
 
             time_elapsed = time.time() - start_time
-            print("Finished " + str(i) + "/" + str(iters) +
-                  " iteration ")
-            print("Estimated time left: ",
-                  int(time_elapsed * (iters - i)), " sec.")
-
+            print("Finished " + str(i) + "/" + str(iters) + " iteration ")
+            print("Estimated time left: ", int(
+                time_elapsed * (iters - i)), " sec.")
             print("")
 
-            save_resampling_iter = open("data/" + gran +
-                                        "/resampling/iter_" + str(i) + ".pickle", "wb")
+            save_resampling_iter = open(
+                "data/" + gran + "/resampling/iter_" + str(i) + ".pickle", "wb")
             pickle.dump(iter_sample, save_resampling_iter, -1)
     else:
         print("'" + gran + "'" +
@@ -173,6 +170,7 @@ def Resample(gran, dataset):
 
 
 def Burrows_delta(gran):
+    """ Generates burrows_delta matrix given a granularity and store in a pickle file, This must be run after Resample() """
     if gran in {"states", "cities"}:
         resample_path = "data/" + gran + "/resampling"
         if not os.path.exists(resample_path):
@@ -258,6 +256,7 @@ def Burrows_delta(gran):
 
 
 def JSD(gran):
+    """ Generates JSD matrix given a granularity and store in a pickle file, This must be run after Resample() """
     resample_path = "data/" + gran + "/resampling"
     if not os.path.exists(resample_path):
         print("No resampling data found! Please run Resample() first.")
@@ -309,6 +308,7 @@ def JSD(gran):
 
 
 def TF_IDF(gran):
+    """ Generates a TF-IDF matrix given a granularity and store in a pickle file, This must be run after Resample() """
     resample_path = "data/" + gran + "/resampling"
     if not os.path.exists(resample_path):
         print("No resampling data found! Please run Resample() first.")
@@ -344,6 +344,7 @@ def TF_IDF(gran):
 
 
 def Norm_mat(gran):
+    """ Combines the matrices generated from burrows_delta, JSD and TF-IDF by calculating the norm matrix of the 3 """
     dist_path = "data/" + gran + "/dist_mats"
     if not os.path.exists(dist_path):
         print("Missing distance matrices data! Please run Burrows_delta(), JSD(), and TF_IDF() first.")
@@ -358,7 +359,7 @@ def Norm_mat(gran):
         z_mat = pickle.load(Z_mat_file)
 
         jsd_mat_file = open(
-            "data/" + gran + "/dist_mats/JSD_dist_mat.pickle", "rb")
+            "data/" + gran + "/dist_mats/jsd_dist_mat.pickle", "rb")
         jsd_mat = pickle.load(jsd_mat_file)
 
         tfidf_mat_file = open(
